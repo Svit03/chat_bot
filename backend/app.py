@@ -55,7 +55,7 @@ def get_response(intent, text):
         material = find_material(text)
         if material:
             info = MATERIALS[material]
-            return f"📦 {info['name']} - есть в наличии!\nМесторождение: {info['source']}\n\nМожем отгрузить сегодня!"
+            return f"📦 {info['name']} - есть в наличии!\n\nМожем отгрузить сегодня!"
         return f"📦 Все материалы в наличии!\n\nСпрашивайте: щебень, доломит, песок, гравий"
     
     elif intent == "contact":

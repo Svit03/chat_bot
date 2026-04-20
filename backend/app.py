@@ -1,14 +1,14 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
-from backend.materials import MATERIALS, DELIVERY_INFO, find_material
+from materials import MATERIALS, DELIVERY_INFO, find_material
 
 app = FastAPI(title="Неруд Консультант", version="1.0.0")
 
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
-    allow_credentials=Tr
+    allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
@@ -64,7 +64,7 @@ def get_response(intent, text):
     elif intent == "greeting":
         return f"👋 Здравствуйте! Я бот-консультант по нерудным материалам.\n\nДоставка по Улан-Удэ самосвалами 2 и 4 тонны.\n\nЧто вас интересует? (цены, доставка, наличие, контакты)"
     
-    return f"Извините, я не совсем понял. Позвоните нам: 575677
+    return "Извините, я не совсем понял. Позвоните нам: 575677"
 
 @app.get("/")
 async def root():
@@ -86,8 +86,8 @@ if __name__ == "__main__":
     print("=" * 50)
     print("🚛 НЕРУД КОНСУЛЬТАНТ - ЗАПУСК БЭКЕНДА")
     print("=" * 50)
-    print(f"📍 Доставка: Улан-Удэ")
-    print(f"🚀 Сервер: http://localhost:8000")
-    print(f"📖 Документация: http://localhost:8000/docs")
+    print("📍 Доставка: Улан-Удэ")
+    print("🚀 Сервер: http://localhost:8000")
+    print("📖 Документация: http://localhost:8000/docs")
     print("=" * 50)
     uvicorn.run(app, host="0.0.0.0", port=8000)

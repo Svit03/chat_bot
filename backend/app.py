@@ -51,28 +51,27 @@ def get_response(intent, text):
         material = find_material(text)
         if material:
             info = MATERIALS[material]
-            return f"💰 {info['name']}\n\nЦена: {info['price']} руб/{info['unit']}\n{info['description']}\n\nСколько тонн вам нужно? Уточните адрес доставки!"
+            return f"💰 <strong>{info['name']}</strong>\n\nЦена: {info['price']} руб/{info['unit']}\n{info['description']}\n\n❓ Сколько тонн вам нужно? Уточните адрес доставки!"
         else:
-            materials_list = "\n".join([f"• {m}: {info['price']} руб/{info['unit']}" for m, info in MATERIALS.items()])
-            return f"💰 У нас есть:\n{materials_list}\n\nКакой материал вас интересует?"
+            return f"💰 <strong>Наши цены:</strong>\n\n• 🪨 Щебень 5-20: 1700 руб/тонна\n• 🪨 Щебень 20-40: 1650 руб/тонна\n• 💎 Доломит: 330 руб/мешок 40-45кг\n• 🏖️ Песок: 800 руб/тонна\n• ⚫ Гравий: 1600 руб/тонна\n\n❓ Какой материал вас интересует?"
     
     elif intent == "delivery":
-        return f"🚚 Доставка по {DELIVERY_INFO['city']}\n\nСамосвалы: {', '.join(DELIVERY_INFO['trucks'])}\nСтоимость: {DELIVERY_INFO['price']}\n\nУточните точный адрес для расчёта!"
+        return f"🚚 <strong>Доставка по Улан-Удэ</strong>\n\n✅ Самосвалы: 2 и 4 тонны\n✅ Стоимость: от 2000 руб (зависит от расстояния)\n\n📍 Уточните точный адрес для расчёта!"
     
     elif intent == "availability":
         material = find_material(text)
         if material:
             info = MATERIALS[material]
-            return f"📦 {info['name']} - есть в наличии!\n\nМожем отгрузить сегодня!"
-        return f"📦 Все материалы в наличии!\n\nСпрашивайте: щебень, доломит, песок, гравий"
+            return f"📦 <strong>{info['name']}</strong>\n\n✅ Есть в наличии!\n🚚 Можем отгрузить сегодня!\n\n❓ Сколько вам нужно?"
+        return f"📦 <strong>Наличие на складе</strong>\n\n✅ Все материалы в наличии:\n• 🪨 Щебень (все фракции)\n• 💎 Доломит\n• 🏖️ Песок\n• ⚫ Гравий\n\n❓ Какой материал вас интересует?"
     
     elif intent == "contact":
-        return f"📞 Наши контакты:\n\n• Телефон: 575677\n\nЗвоните, договоримся!"
+        return f"📞 <strong>Наши контакты</strong>\n\n📱 Телефон: 575677\n💬 WhatsApp: 575677\n📧 Telegram: @nerud_03\n\n📍 Улан-Удэ\n\n⏰ Режим: Пн-Сб 8:00-19:00\n\n✨ Звоните, договоримся!"
     
     elif intent == "greeting":
-        return f"👋 Здравствуйте! Я бот-консультант по нерудным материалам.\n\nДоставка по Улан-Удэ самосвалами 2 и 4 тонны.\n\nЧто вас интересует?"
+        return f"👋 <strong>Здравствуйте! Я Неруд Консультант</strong>\n\n🚚 Доставка нерудных материалов по <strong>Улан-Удэ</strong>\n\n<strong>Что у нас есть:</strong>\n• 🪨 Щебень (5-20, 20-40, 40-70)\n• 💎 Доломит, мраморный щебень в мешках\n• 🏖️ Песок, ПГС\n• ⚫ Гравий, галька, крошка, отсев, уголь\n\n📞 <strong>Контакты:</strong> 575677\n\n💬 <strong>Что вас интересует?</strong>"
     
-    return "Извините, я не совсем понял. Позвоните нам: 575677"
+    return f"❌ Извините, я не совсем понял.\n\n📞 Позвоните нам: 575677\n\n💬 Или переформулируйте вопрос."
 
 @app.get("/")
 async def root():

@@ -36,7 +36,6 @@ class BotResponse(BaseModel):
     confidence: float
 
 def get_intent_ml(text):
-    """Определение интента через ML модель"""
     if pipeline is None:
         return "unknown", 0.5
     

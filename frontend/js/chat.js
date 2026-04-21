@@ -106,9 +106,11 @@ function addMessage(text, sender) {
     
     const avatar = sender === 'bot' ? '🤖' : '👤';
     
+    const formattedText = text.replace(/\n/g, '<br>');
+    
     messageDiv.innerHTML = `
         <div class="message_avatar">${avatar}</div>
-        <div class="message_text">${text}</div>
+        <div class="message_text">${formattedText}</div>
     `;
     
     messagesDiv.appendChild(messageDiv);

@@ -1,6 +1,8 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
+import joblib
+import os
 from materials import MATERIALS, DELIVERY_INFO, find_material
 
 app = FastAPI(title="Неруд Консультант", version="1.0.0")
@@ -13,6 +15,17 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+model_path = 'ml/models/intent_model.pkl'
+id_map_path = 'ml/models/id_to_intent.pkl'
+
+if os.path.exists(model_path):
+    pipeline = joblib.load(model_path)
+    id_to_intent = joblib.load(id_map_path)
+    print("✅ ML модель загружена")
+else:
+    pipeline = None
+    print("⚠️ ML модель не найдена, используется заглушка")
+
 class Message(BaseModel):
     text: str
     user_id: str = "anonymous"
@@ -22,21 +35,17 @@ class BotResponse(BaseModel):
     intent: str
     confidence: float
 
-def get_intent(text):
-    text_lower = text.lower()
+def get_intent_ml(text):
+    """Определение интента через ML модель"""
+    if pipeline is None:
+        return "unknown", 0.5
     
-    if any(word in text_lower for word in ["цена", "стоит", "почём", "сколько"]):
-        return "price", 0.85
-    elif any(word in text_lower for word in ["доставк", "привези", "довези"]):
-        return "delivery", 0.80
-    elif any(word in text_lower for word in ["есть", "наличие", "в наличии"]):
-        return "availability", 0.75
-    elif any(word in text_lower for word in ["телефон", "позвони", "контакт", "связаться"]):
-        return "contact", 0.90
-    elif any(word in text_lower for word in ["привет", "здравствуй", "добрый"]):
-        return "greeting", 0.95
-    else:
-        return "unknown", 0.50
+    text_lower = text.lower()
+    pred_id = pipeline.predict([text_lower])[0]
+    proba = pipeline.predict_proba([text_lower])[0]
+    confidence = max(proba)
+    intent = id_to_intent[pred_id]
+    return intent, confidence
 
 def get_response(intent, text):
     if intent == "price":
@@ -62,7 +71,7 @@ def get_response(intent, text):
         return f"📞 Наши контакты:\n\n• Телефон: 575677\n\nЗвоните, договоримся!"
     
     elif intent == "greeting":
-        return f"👋 Здравствуйте! Я бот-консультант по нерудным материалам.\n\nДоставка по Улан-Удэ самосвалами 2 и 4 тонны.\n\nЧто вас интересует? (цены, доставка, наличие, контакты)"
+        return f"👋 Здравствуйте! Я бот-консультант по нерудным материалам.\n\nДоставка по Улан-Удэ самосвалами 2 и 4 тонны.\n\nЧто вас интересует?"
     
     return "Извините, я не совсем понял. Позвоните нам: 575677"
 
@@ -76,10 +85,10 @@ async def health():
 
 @app.post("/chat", response_model=BotResponse)
 async def chat(message: Message):
-    intent, confidence = get_intent(message.text)
+    intent, confidence = get_intent_ml(message.text)
     reply = get_response(intent, message.text)
     
-    return BotResponse(reply=reply, intent=intent, confidence=confidence)
+    return BotResponse(reply=reply, intent=intent, confidence=round(confidence, 3))
 
 if __name__ == "__main__":
     import uvicorn

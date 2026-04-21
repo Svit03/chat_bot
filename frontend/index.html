@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Неруд Консультант | Доставка по Улан-Удэ</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+    <div class="chat_container">
+        <div class="chat_header">
+            <div class="header_content">
+                <div class="logo">
+                    <span class="logo_icon">🚛</span>
+                    <div class="logo_text">
+                        <h1>Неруд Консультант</h1>
+                        <p>Доставка по Улан-Удэ</p>
+                    </div>
+                </div>
+                <div class="theme_switch" onclick="toggleTheme()">
+                    <span class="theme_icon">☀️</span>
+                    <div class="switch_track">
+                        <div class="switch_thumb"></div>
+                    </div>
+                    <span class="theme_label">Тема</span>
+                </div>
+            </div>
+            <div class="delivery_info">
+                <span>📍 Доставка только по городу</span>
+                <span class="delivery_icon">🚚</span>
+                <span>Самосвалы 2 и 4 тонны</span>
+                <span class="truck_icon">⛟</span>
+                <span>Прямой номер: 575677</span>
+            </div>
+        </div>
+
+        <div class="messages_area" id="messagesArea">
+            <div class="message_bot">
+                <div class="message_avatar">🤖</div>
+                <div class="message_text">
+                    👋 <strong>Здравствуйте! Я Неруд Консультант</strong><br><br>
+                    Доставкой нерудных материалов по <strong>Улан-Удэ</strong>.<br><br>
+                    
+                    <strong>Что у нас есть:</strong><br>
+                    • 🪨 Щебень (5-20, 20-40, 40-70)<br>
+                    • 💎 Доломит, мраморный щебень в мешках<br>
+                    • 🏖️ Песок, ПГС<br>
+                    • ⚫ Гравий, галька, крошка, отсев, уголь<br><br>
+                    
+                    📞 <strong>Контакты:</strong> <a href="tel:+79991234567" class="phone_link">575677</a><br><br>
+                    
+                    💬 <strong>Что вас интересует?</strong>
+                </div>
+            </div>
+        </div>
+
+        <div class="suggestions">
+            <button class="suggestion_btn" onclick="sendSuggestion('сколько стоит щебень')">💰 Цены</button>
+            <button class="suggestion_btn" onclick="sendSuggestion('доставка по улан удэ')">🚚 Доставка</button>
+            <button class="suggestion_btn" onclick="sendSuggestion('есть ли доломит')">📦 Наличие</button>
+            <button class="suggestion_btn" onclick="sendSuggestion('ваш телефон')">📞 Контакты</button>
+        </div>
+
+        <div class="input_area">
+            <input type="text" id="userInput" placeholder="Напишите ваш вопрос..." autocomplete="off">
+            <button onclick="sendMessage()">📤 Отправить</button>
+        </div>
+    </div>
+
+    <script src="js/chat.js"></script>
+</body>
+</html>

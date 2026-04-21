@@ -51,11 +51,12 @@ def get_response(intent, text):
         material = find_material(text)
         if material:
             info = MATERIALS[material]
-            return f"💰 {info['name']}\n\nЦена: {info['price']} руб/{info['unit']}\n{info['description']}\n\nСколько тонн вам нужно? Уточните адрес доставки!"
+            return f"💰 {info['name']}\n\n💰 Цена: {info['price']} руб/{info['unit']}\n📝 {info['description']}\n\n❓ Сколько тонн вам нужно? Уточните адрес доставки!"
         else:
-            materials_list = "\n".join([f"• {m}: {info['price']} руб/{info['unit']}" for m, info in MATERIALS.items()])
-            return f"💰 У нас есть:\n{materials_list}\n\nКакой материал вас интересует?"
-    
+            # Если материал не найден, показываем список
+            materials_list = "\n".join([f"• {info['name']}: {info['price']} руб/{info['unit']}" for m, info in MATERIALS.items()])
+            return f"💰 Наши материалы:\n{materials_list}\n\n❓ Какой материал вас интересует?"
+            
     elif intent == "delivery":
         return f"🚚 Доставка по {DELIVERY_INFO['city']}\n\nСамосвалы: {', '.join(DELIVERY_INFO['trucks'])}\nСтоимость: {DELIVERY_INFO['price']}\n\nУточните точный адрес для расчёта!"
     

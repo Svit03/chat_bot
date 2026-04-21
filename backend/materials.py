@@ -40,7 +40,21 @@ DELIVERY_INFO = {
 def find_material(query):
     """Поиск материала в тексте"""
     query_lower = query.lower()
+    
     for key in MATERIALS.keys():
         if key in query_lower:
             return key
+    
+    if "щебень" in query_lower:
+        return "щебень 5-20"  
+    
+    if "доломит" in query_lower:
+        return "доломит"
+    
+    if "песок" in query_lower:
+        return "песок"
+    
+    if "гравий" in query_lower:
+        return "гравий"
+    
     return None

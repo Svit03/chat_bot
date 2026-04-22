@@ -2,50 +2,76 @@ MATERIALS = {
     "щебень": {
         "name": "Щебень",
         "price_per_ton": 1700,
+        "unit": "тонна",
         "fractions": ["5-20", "20-40", "40-70"],
-        "description": "Для бетона, фундамента, дорожек"
+        "description": "Для бетона, фундамента, дорожек",
+        "type": "ton"
     },
     "щебень 5-20": {
         "name": "Щебень фракции 5-20мм",
         "price_per_ton": 1700,
-        "description": "Мелкий щебень для бетона и дорожек"
+        "unit": "тонна",
+        "description": "Мелкий щебень для бетона и дорожек",
+        "type": "ton"
     },
     "щебень 20-40": {
         "name": "Щебень фракции 20-40мм",
         "price_per_ton": 1650,
-        "description": "Средний щебень для фундамента"
+        "unit": "тонна",
+        "description": "Средний щебень для фундамента",
+        "type": "ton"
     },
     "доломит": {
         "name": "Доломит (белый камень)",
-        "price_per_ton": 7500,
-        "price_per_bag": 330,
+        "price_per_bag": 350,
         "bag_weight": 45,
-        "description": "Для сада, дорожек, декора"
+        "unit": "мешок",
+        "description": "Для сада, дорожек, декора",
+        "type": "bag",
+        "free_delivery_zones": ["октябрьский", "комушка", "горький", "радужный"],
+        "delivery_price_other": 700
+    },
+    "мраморный щебень": {
+        "name": "Мраморный щебень в мешках",
+        "price_per_bag": 350,
+        "bag_weight": 45,
+        "unit": "мешок",
+        "description": "Для сада, огорода, дорожек и декора",
+        "type": "bag",
+        "free_delivery_zones": ["октябрьский", "комушка", "горький", "радужный"],
+        "delivery_price_other": 700
     },
     "песок": {
         "name": "Песок строительный",
         "price_per_ton": 800,
-        "description": "Для бетона и строительных работ"
+        "unit": "тонна",
+        "description": "Для бетона и строительных работ",
+        "type": "ton"
     },
     "гравий": {
         "name": "Гравий",
         "price_per_ton": 1600,
-        "description": "Для дренажа и строительства"
+        "unit": "тонна",
+        "description": "Для дренажа и строительства",
+        "type": "ton"
     },
     "крошка": {
         "name": "Крошка гранитная",
         "price_per_ton": 1800,
-        "description": "Для огорода, бетона, стяжки"
+        "unit": "тонна",
+        "description": "Для огорода, бетона, стяжки",
+        "type": "ton"
     },
     "отсев": {
         "name": "Отсев речной",
         "price_per_ton": 900,
-        "description": "Для бетона, стяжки, штукатурки"
+        "unit": "тонна",
+        "description": "Для бетона, стяжки, штукатурки",
+        "type": "ton"
     }
 }
 
 def find_material(query):
-    """Поиск материала в тексте"""
     query_lower = query.lower()
     
     for key in MATERIALS.keys():
@@ -56,6 +82,8 @@ def find_material(query):
         return "щебень 5-20"
     if "доломит" in query_lower:
         return "доломит"
+    if "мраморный" in query_lower:
+        return "мраморный щебень"
     if "песок" in query_lower:
         return "песок"
     if "гравий" in query_lower:
@@ -68,8 +96,18 @@ def find_material(query):
     return None
 
 def get_material_price(material_key):
-    """Получить цену материала за тонну"""
+    """Получить цену материала (за мешок или за тонну)"""
     material = MATERIALS.get(material_key)
-    if material and "price_per_ton" in material:
-        return material["price_per_ton"]
-    return 0
+    if not material:
+        return 0, "ton"
+    
+    if material.get("type") == "bag":
+        return material.get("price_per_bag", 0), "bag"
+    return material.get("price_per_ton", 0), "ton"
+
+def get_material_unit(material_key):
+    """Получить единицу измерения материала"""
+    material = MATERIALS.get(material_key)
+    if not material:
+        return "тонна"
+    return material.get("unit", "тонна")

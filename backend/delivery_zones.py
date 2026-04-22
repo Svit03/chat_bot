@@ -1,3 +1,5 @@
+from materials import MATERIALS
+
 DELIVERY_ZONES = {
     "октябрьский": {
         "name": "Октябрьский район",
@@ -95,8 +97,19 @@ def detect_loading_point(text, material):
     
     return "сотые_кварталы", LOADING_POINTS["сотые_кварталы"]
 
-def calculate_delivery_price(zone_key, loading_point_key):
-    """Расчёт стоимости доставки с учётом зоны и места загрузки"""
+def calculate_delivery_price(zone_key, loading_point_key, material_key=None):
+    """Расчёт стоимости доставки (с учётом бесплатной доставки для доломита/мраморного щебня)"""
+    
+    if material_key in ["доломит", "мраморный щебень"]:
+        zone_lower = zone_key.lower()
+        free_zones = ["октябрьский", "комушка", "горький", "радужный"]
+        
+        for free_zone in free_zones:
+            if free_zone in zone_lower:
+                return 0  
+        
+        return 700
+    
     zone = DELIVERY_ZONES.get(zone_key, DELIVERY_ZONES["октябрьский"])
     loading = LOADING_POINTS.get(loading_point_key, LOADING_POINTS["сотые_кварталы"])
     

@@ -117,13 +117,14 @@ def extract_district(text):
 
 def format_price_calculation_simple(material_name, quantity, material_price, delivery_price, total):
     """Форматирование расчёта стоимости (без откуда и скидки)"""
+    ton_text = "тонна" if quantity == 1 else "тонны" if 2 <= quantity <= 4 else "тонн"
+    
     return f"""🚛 РАСЧЁТ СТОИМОСТИ
 
 📦 Материал: {material_name}
-⚖️ Количество: {quantity} тонн
-🚛 Машина: {quantity} тонн
+⚖️ Количество: {quantity:.1f} {ton_text}
 
-💰 Стоимость материала: {material_price:,.0f} руб/тонна × {quantity} = {material_price * quantity:,.0f} руб
+💰 Стоимость материала: {material_price:,.0f} руб/тонна × {quantity:.1f} = {material_price * quantity:,.0f} руб
 🚚 Доставка: {delivery_price:,.0f} руб
 
 ━━━━━━━━━━━━━━━━━━━━
@@ -133,11 +134,13 @@ def format_price_calculation_simple(material_name, quantity, material_price, del
 
 def format_price_calculation_bag(material_name, quantity, material_price, delivery_price, total):
     """Форматирование расчёта стоимости для мешков"""
+    bag_text = "мешок" if quantity == 1 else "мешка" if 2 <= quantity <= 4 else "мешков"
+    
     delivery_text = "БЕСПЛАТНО" if delivery_price == 0 else f"{delivery_price:,.0f} руб"
     return f"""🚛 РАСЧЁТ СТОИМОСТИ
 
 📦 Материал: {material_name}
-📦 Количество: {quantity} мешков (по 40-45кг)
+📦 Количество: {quantity} {bag_text} (по 40-45кг)
 
 💰 Стоимость материала: {material_price} руб/мешок × {quantity} = {material_price * quantity:,.0f} руб
 🚚 Доставка: {delivery_text}

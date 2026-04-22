@@ -43,6 +43,19 @@ def extract_quantity(text, material_key=None):
     """Извлечение количества (тонн для сыпучих, мешков для доломита/мраморного щебня)"""
     text_lower = text.lower().strip()
     
+    number_words = {
+        "одна": 1, "один": 1, "одну": 1,
+        "две": 2, "два": 2, "двух": 2,
+        "три": 3, "трёх": 3,
+        "четыре": 4, "четырёх": 4,
+        "пять": 5, "пяти": 5,
+        "шесть": 6, "шести": 6,
+        "семь": 7, "семи": 7,
+        "восемь": 8, "восьми": 8,
+        "девять": 9, "девяти": 9,
+        "десять": 10, "десяти": 10
+    }
+    
     is_bag_material = material_key in ["доломит", "мраморный щебень"] if material_key else False
     
     if is_bag_material:
@@ -52,11 +65,21 @@ def extract_quantity(text, material_key=None):
             if 1 <= quantity <= 100:
                 return {"value": quantity, "unit": "bag"}
         
+        for word, num in number_words.items():
+            if f"{word} мешк" in text_lower:
+                if 1 <= num <= 100:
+                    return {"value": num, "unit": "bag"}
+        
         simple_match = re.match(r'^(\d+)$', text_lower)
         if simple_match:
             quantity = int(simple_match.group(1))
             if 1 <= quantity <= 100:
                 return {"value": quantity, "unit": "bag"}
+        
+        # Проверка на слово без "мешк" (просто "два")
+        for word, num in number_words.items():
+            if word == text_lower and 1 <= num <= 100:
+                return {"value": num, "unit": "bag"}
         
         ton_match = re.search(r'(\d+(?:[.,]\d+)?)\s*тонн?', text_lower)
         if ton_match:
@@ -76,6 +99,18 @@ def extract_quantity(text, material_key=None):
                     return {"value": quantity, "unit": "ton"}
                 elif quantity > 4:
                     return "max_exceeded"
+        
+        for word, num in number_words.items():
+            if f"{word} тонн" in text_lower or f"{word} т" in text_lower:
+                if 1 <= num <= 4:
+                    return {"value": float(num), "unit": "ton"}
+                elif num > 4:
+                    return "max_exceeded"
+        
+        # Проверка на слово без "тонн" (просто "две")
+        for word, num in number_words.items():
+            if word == text_lower and 1 <= num <= 4:
+                return {"value": float(num), "unit": "ton"}
         
         simple_match = re.match(r'^(\d+)$', text_lower)
         if simple_match:
@@ -117,7 +152,12 @@ def extract_district(text):
 
 def format_price_calculation_simple(material_name, quantity, material_price, delivery_price, total):
     """Форматирование расчёта стоимости (без откуда и скидки)"""
-    ton_text = "тонна" if quantity == 1 else "тонны" if 2 <= quantity <= 4 else "тонн"
+    if quantity == 1:
+        ton_text = "тонна"
+    elif 2 <= quantity <= 4:
+        ton_text = "тонны"
+    else:
+        ton_text = "тонн"
     
     return f"""🚛 РАСЧЁТ СТОИМОСТИ
 
@@ -134,7 +174,12 @@ def format_price_calculation_simple(material_name, quantity, material_price, del
 
 def format_price_calculation_bag(material_name, quantity, material_price, delivery_price, total):
     """Форматирование расчёта стоимости для мешков"""
-    bag_text = "мешок" if quantity == 1 else "мешка" if 2 <= quantity <= 4 else "мешков"
+    if quantity == 1:
+        bag_text = "мешок"
+    elif 2 <= quantity <= 4:
+        bag_text = "мешка"
+    else:
+        bag_text = "мешков"
     
     delivery_text = "БЕСПЛАТНО" if delivery_price == 0 else f"{delivery_price:,.0f} руб"
     return f"""🚛 РАСЧЁТ СТОИМОСТИ
@@ -217,12 +262,12 @@ def get_response(intent, text, user_id):
 
 Пожалуйста, укажите количество от 1 до 4 тонн.
 
-Пример: "2 тонны" или "4 тонны" """
+Примеры: "2 тонны", "4", "две тонны", "одна тонна" """
         
         if quantity_data == "invalid_unit":
             return f"""⚠️ Для доломита указывайте количество в мешках, не в тоннах.
 
-Пример: "10 мешков" или "5" """
+Примеры: "10 мешков", "5", "два мешка" """
         
         if quantity_data:
             session["pending_quantity"] = quantity_data
@@ -232,6 +277,13 @@ def get_response(intent, text, user_id):
             material_name = MATERIALS[material]["name"]
             unit = "мешков" if quantity_data["unit"] == "bag" else "тонн"
             value = quantity_data["value"]
+            
+            if quantity_data["unit"] != "bag":
+                if value == 1:
+                    unit = "тонна"
+                elif 2 <= value <= 4:
+                    unit = "тонны"
+            
             return f"""📦 {material_name}, {value} {unit}
 
 📍 Укажите район доставки:
@@ -247,14 +299,17 @@ def get_response(intent, text, user_id):
 Примеры:
 • "10 мешков"
 • "5"
-• "20 мешков" """
+• "два мешка"
+• "три" """
             else:
                 return f"""❓ Укажите количество тонн (от 1 до 4 тонн)
 
 Примеры:
 • "2 тонны"
 • "4"
-• "3 тонны" """
+• "две тонны"
+• "одна тонна"
+• "три" """
     
     if intent == "price":
         material = find_material(text)
@@ -266,12 +321,12 @@ def get_response(intent, text, user_id):
 
 Пожалуйста, укажите количество от 1 до 4 тонн.
 
-Пример: "4 тонны щебня в Комушку" """
+Примеры: "2 тонны", "4", "две тонны", "одна тонна" """
         
         if quantity_data == "invalid_unit":
             return f"""⚠️ Для доломита указывайте количество в мешках, не в тоннах.
 
-Пример: "10 мешков доломита" """
+Примеры: "10 мешков доломита", "5", "два мешка" """
         
         if material and quantity_data and zone_key:
             material_price, price_unit = get_material_price(material)
@@ -297,6 +352,13 @@ def get_response(intent, text, user_id):
             material_name = MATERIALS[material]["name"]
             unit = "мешков" if quantity_data["unit"] == "bag" else "тонн"
             value = quantity_data["value"]
+            
+            if quantity_data["unit"] != "bag":
+                if value == 1:
+                    unit = "тонна"
+                elif 2 <= value <= 4:
+                    unit = "тонны"
+            
             return f"""📦 {material_name}, {value} {unit}
 
 📍 Укажите район доставки:
@@ -317,7 +379,9 @@ def get_response(intent, text, user_id):
 📝 {info['description']}
 🎁 Бесплатная доставка по Октябрьскому району (Комушка, Горький, Радужный)
 
-❓ Укажите количество мешков (например: "10 мешков" или "5") """
+❓ Укажите количество мешков
+
+Примеры: "10 мешков", "5", "два мешка", "три" """
             else:
                 return f"""💰 {info['name']}
 
@@ -326,7 +390,7 @@ def get_response(intent, text, user_id):
 
 ❓ Укажите количество тонн (от 1 до 4 тонн)
 
-Примеры: "2 тонны" или "4" """
+Примеры: "2 тонны", "4", "две тонны", "три", "одна тонна" """
         
         else:
             materials_list = "\n".join([f"• {info['name']}: {info.get('price_per_ton', info.get('price_per_bag', 0))} руб/{info.get('unit', 'тонна')}" for m, info in MATERIALS.items()])
@@ -403,8 +467,8 @@ def get_response(intent, text, user_id):
 
 📦 Что у нас есть:
 • 🪨 Щебень - 1700 руб/тонна (от 1 до 4 тонн)
-• 💎 Доломит - 350 руб/мешок (40-45кг)
-• 💎 Мраморный щебень - 350 руб/мешок
+• 💎 Доломит - 330 руб/мешок (40-45кг)
+• 💎 Мраморный щебень - 330 руб/мешок
 • 🏖️ Песок - 800 руб/тонна
 • ⚫ Гравий - 1600 руб/тонна
 

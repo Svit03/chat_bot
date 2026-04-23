@@ -4,7 +4,7 @@ from pydantic import BaseModel
 import joblib
 import os
 import re
-from materials import find_material, get_material_price, get_material_name
+from materials import find_material, get_material_price, get_material_name, get_all_materials
 from delivery_zones import detect_delivery_zone, calculate_delivery_price, get_districts_list
 
 app = FastAPI(title="Неруд Консультант", version="1.0.0")
@@ -57,12 +57,23 @@ def extract_quantity(text, material_key=None):
     
     is_bag_material = material_key in ["доломит", "мраморный_щебень"] if material_key else False
     
+    if not is_bag_material:
+        if text_lower == "тонна" or text_lower == "тонну" or text_lower == "тонны":
+            return {"value": 1, "unit": "ton"}
+        
+        if "одна" in text_lower or "одну" in text_lower:
+            if "тонн" in text_lower:
+                return {"value": 1, "unit": "ton"}
+    
     if is_bag_material:
         bag_match = re.search(r'(\d+)\s*мешк', text_lower)
         if bag_match:
             quantity = int(bag_match.group(1))
             if 1 <= quantity <= 100:
                 return {"value": quantity, "unit": "bag"}
+        
+        if text_lower == "мешок" or text_lower == "мешка":
+            return {"value": 1, "unit": "bag"}
         
         for word, num in number_words.items():
             if f"{word} мешк" in text_lower:
@@ -173,6 +184,33 @@ def get_intent_ml(text):
     intent = id_to_intent[pred_id]
     return intent, confidence
 
+def extract_material_from_price_query(text):
+    text_lower = text.lower()
+    
+    price_words = ["цена", "почём", "сколько", "стоит", "стоимость", "рублей"]
+    has_price_word = any(word in text_lower for word in price_words)
+    
+    if not has_price_word:
+        return None
+    
+    materials = get_all_materials()
+    
+    for material_key, material_info in materials.items():
+        material_name = material_info["name"].lower()
+        
+        if material_name in text_lower:
+            return material_key
+        
+        material_key_lower = material_key.lower()
+        if material_key_lower in text_lower:
+            return material_key
+        
+        for word in material_name.split():
+            if word in text_lower and len(word) > 3:
+                return material_key
+    
+    return None
+
 def get_response(intent, text, user_id):
     if user_id not in user_sessions:
         user_sessions[user_id] = {}
@@ -249,7 +287,6 @@ def get_response(intent, text, user_id):
 
 Например: "в Комушку" """
         else:
-            material_info = get_material_price(material)
             return f"""❓ Укажите количество тонн (от 1 до 4 тонн)
 
 Примеры:
@@ -261,8 +298,14 @@ def get_response(intent, text, user_id):
     
     if intent == "price":
         material = find_material(text)
+        
+        if not material:
+            material = extract_material_from_price_query(text)
+        
         quantity_data = extract_quantity(text, material)
         zone_key, zone_name = detect_delivery_zone(text)
+        
+        has_price_word = any(word in text.lower() for word in ["цена", "почём", "сколько", "стоит", "стоимость", "рублей"])
         
         if quantity_data == "max_exceeded":
             return f"""⚠️ Извините, наши самосвалы вмещают максимум 4 тонны за рейс.
@@ -312,6 +355,26 @@ def get_response(intent, text, user_id):
 
 Например: "в Комушку" """
         
+        elif material and has_price_word:
+            material_price, price_unit = get_material_price(material)
+            material_name = get_material_name(material)
+            
+            if price_unit == "bag":
+                return f"""💰 {material_name}
+
+💰 Цена: {material_price} руб/мешок (40-45кг)
+🎁 Бесплатная доставка по Октябрьскому району
+
+❓ Укажите количество мешков (например: "10 мешков" или "5") """
+            else:
+                return f"""💰 {material_name}
+
+💰 Цена: {material_price} руб/тонна
+
+❓ Укажите количество тонн (от 1 до 4 тонн)
+
+Примеры: "2 тонны", "4", "две тонны", "одна тонна" """
+        
         elif material:
             session["pending_material"] = material
             session["awaiting_quantity"] = True
@@ -337,18 +400,23 @@ def get_response(intent, text, user_id):
 Примеры: "2 тонны", "4", "две тонны", "одна тонна" """
         
         else:
-            return f"""💰 Напишите название материала, например: "щебень" или "доломит" """
+            materials = get_all_materials()
+            ton_materials = [f"• {info['name']}: {info['price_per_ton']} руб/{info['unit']}" for m, info in materials.items() if info['type'] == 'ton' and info.get('price_per_ton')]
+            bag_materials = [f"• {info['name']}: {info['price_per_bag']} руб/{info['unit']}" for m, info in materials.items() if info['type'] == 'bag' and info.get('price_per_bag')]
+            materials_list = "\n".join(ton_materials + bag_materials)
+            return f"""💰 Наши материалы:
+
+{materials_list}
+
+❓ Какой материал вас интересует? Например: "щебень", "песок", "гравий" """
     
     elif intent == "delivery":
+        zones = get_districts_list()
         return f"""🚚 Доставка по Улан-Удэ
 
 🚛 Грузоподъёмность: 2 и 4 тонны (максимум 4 тонны за рейс)
 
-📍 Стоимость доставки:
-• Октябрьский район: 3500 руб (для доломита - БЕСПЛАТНО!)
-• Советский район: 4000-4500 руб
-• Левый берег: 5000 руб
-• Железнодорожный район: 5000-5500 руб
+{zones}
 
 💡 Напишите: "4 тонны щебня в Комушку" или "10 мешков доломита" """
     
@@ -373,15 +441,13 @@ def get_response(intent, text, user_id):
 🚛 Максимум: 4 тонны за рейс
 
 ❓ Укажите количество (1-4 тонны) и район доставки"""
+        materials = get_all_materials()
+        bag_materials = [info['name'] for m, info in materials.items() if info['type'] == 'bag']
+        ton_materials = [info['name'] for m, info in materials.items() if info['type'] == 'ton']
         return f"""📦 Все материалы в наличии!
 
-✅ Щебень
-✅ Доломит (в мешках)
-✅ Мраморный щебень (в мешках)
-✅ Песок
-✅ Гравий
-✅ Крошка
-✅ Отсев
+✅ Сыпучие (тонны): {', '.join(ton_materials[:5])}
+✅ Мешковые: {', '.join(bag_materials)}
 
 ❓ Какой материал вас интересует?"""
     
@@ -396,15 +462,16 @@ def get_response(intent, text, user_id):
 ✨ Звоните, договоримся!"""
     
     elif intent == "greeting":
+        materials = get_all_materials()
+        ton_materials = [info['name'] for m, info in materials.items() if info['type'] == 'ton']
+        bag_materials = [info['name'] for m, info in materials.items() if info['type'] == 'bag']
         return f"""👋 Здравствуйте! Я Неруд Консультант
 
 🚚 Доставка нерудных материалов по Улан-Удэ
 
 📦 Что у нас есть:
-• 🪨 Щебень - от 1650 руб/тонна
-• 💎 Доломит - 350 руб/мешок
-• 🏖️ Песок - 800 руб/тонна
-• ⚫ Гравий - 1600 руб/тонна
+• 🪨 Сыпучие: {', '.join(ton_materials[:5])}
+• 💎 В мешках: {', '.join(bag_materials)}
 
 🎁 Доломит и мраморный щебень: БЕСПЛАТНАЯ доставка по Октябрьскому району!
 

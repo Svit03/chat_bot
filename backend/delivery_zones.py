@@ -18,12 +18,6 @@ def get_all_zones():
     finally:
         db.close()
 
-def get_districts_list():
-    return """• Октябрьский район (Комушка, Забайкальский)
-    • Советский район (центр, Вагжанова)
-    • Железнодорожный район (Верхняя Берёзовка, Аршан)
-    • Левый берег (Солдатский, Сосновый Бор)"""
-
 def detect_delivery_zone(text):
     text_lower = text.lower()
     db = SessionLocal()
@@ -32,16 +26,8 @@ def detect_delivery_zone(text):
         for zone in zones:
             microdistricts = db.query(Microdistrict).filter(Microdistrict.zone_id == zone.id).all()
             for md in microdistricts:
-                if md.name in text_lower or (md.slang_name and md.slang_name in text_lower):
+                if md.name.lower() in text_lower or (md.slang_name and md.slang_name.lower() in text_lower):
                     return zone.key_name, {"name": zone.name, "base_price": zone.base_price}
-        
-        if any(word in text_lower for word in ["центр", "арбат", "голова"]):
-            return "советский", {"name": "Советский район", "base_price": 4000}
-        elif any(word in text_lower for word in ["вокзал", "ж/д", "железнодорожный"]):
-            return "железнодорожный", {"name": "Железнодорожный район", "base_price": 5000}
-        elif any(word in text_lower for word in ["комушка", "октябрьский"]):
-            return "октябрьский", {"name": "Октябрьский район", "base_price": 3500}
-        
         return "октябрьский", {"name": "Октябрьский район", "base_price": 3500}
     finally:
         db.close()
@@ -59,5 +45,18 @@ def calculate_delivery_price(zone_key, loading_point_key, material_key=None):
             return 700
         
         return zone.base_price
+    finally:
+        db.close()
+
+def get_districts_list():
+    db = SessionLocal()
+    try:
+        zones = db.query(DeliveryZone).all()
+        result = []
+        for z in zones:
+            microdistricts = db.query(Microdistrict).filter(Microdistrict.zone_id == z.id).limit(3).all()
+            examples = ", ".join([md.name for md in microdistricts[:2]])
+            result.append(f"• {z.name} ({examples})")
+        return "\n".join(result)
     finally:
         db.close()

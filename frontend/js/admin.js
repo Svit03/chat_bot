@@ -1,0 +1,404 @@
+const API_BASE = 'http://localhost:8000';
+let authToken = '';
+
+async function login() {
+    const username = document.getElementById('username').value;
+    const password = document.getElementById('password').value;
+    
+    authToken = btoa(`${username}:${password}`);
+    
+    try {
+        const response = await fetch(`${API_BASE}/admin/materials`, {
+            headers: {
+                'Authorization': `Basic ${authToken}`
+            }
+        });
+        
+        if (response.ok) {
+            document.getElementById('authForm').style.display = 'none';
+            document.getElementById('adminPanel').style.display = 'block';
+            loadMaterials();
+            loadZones();
+            showStatus('✅ Вход выполнен успешно!', 'success');
+        } else {
+            showStatus('❌ Неверный логин или пароль!', 'error');
+        }
+    } catch (error) {
+        showStatus('❌ Ошибка подключения к серверу! Убедитесь, что бэкенд запущен.', 'error');
+    }
+}
+
+async function loadMaterials() {
+    const container = document.getElementById('materialsTable');
+    container.innerHTML = '<div class="loading">Загрузка...</div>';
+    
+    try {
+        const response = await fetch(`${API_BASE}/admin/materials`, {
+            headers: { 'Authorization': `Basic ${authToken}` }
+        });
+        
+        if (response.ok) {
+            const materials = await response.json();
+            renderMaterialsTable(materials);
+        } else {
+            container.innerHTML = '<div class="status error">Ошибка загрузки</div>';
+        }
+    } catch (error) {
+        container.innerHTML = '<div class="status error">Ошибка подключения</div>';
+    }
+}
+
+function renderMaterialsTable(materials) {
+    const container = document.getElementById('materialsTable');
+    
+    if (materials.length === 0) {
+        container.innerHTML = '<div class="loading">Нет материалов</div>';
+        return;
+    }
+    
+    let html = `<table>
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Название</th>
+                <th>Цена за тонну</th>
+                <th>Цена за мешок</th>
+                <th>Ед. изм.</th>
+                <th>Тип</th>
+                <th>Действия</th>
+            </tr>
+        </thead>
+        <tbody>`;
+    
+    for (const m of materials) {
+        const priceTon = m.price_per_ton ?? '';
+        const priceBag = m.price_per_bag ?? '';
+
+        const typeBadge = m.type === 'ton' 
+            ? '<span class="badge badge-ton">📦 Сыпучий</span>' 
+            : '<span class="badge badge-bag">🛍️ Мешковый</span>';
+        
+        html += `
+        <tr>
+            <td><strong>${m.id}</strong></td>
+            <td><strong style="color: #2d5a3b;">${escapeHtml(m.name)}</strong></td>
+            
+            <td style="min-width: 120px;">
+                <input type="number"
+                    id="priceTon_${m.id}"
+                    value="${priceTon}"
+                    placeholder="—"
+                    step="100"
+                    class="price-input">
+            </td>
+            
+            <td style="min-width: 120px;">
+                <input type="number"
+                    id="priceBag_${m.id}"
+                    value="${priceBag}"
+                    placeholder="—"
+                    step="10"
+                    class="price-input">
+            </td>
+            
+            <td>${escapeHtml(m.unit)}</td>
+            <td>${typeBadge}</td>
+            
+            <td class="action-buttons">
+                <button class="btn btn-sm btn-edit" onclick="updateMaterial(${m.id})">
+                    ✏️ Редактировать
+                </button>
+                <button class="btn btn-sm btn-delete" onclick="deleteMaterial(${m.id})">
+                    🗑️ Удалить
+                </button>
+            </td>
+        </tr>`;
+    }
+    
+    html += `</tbody></table>`;
+    container.innerHTML = html;
+}
+
+async function updateMaterial(id) {
+    const priceTonInput = document.getElementById(`priceTon_${id}`);
+    const priceBagInput = document.getElementById(`priceBag_${id}`);
+    
+    const updates = {};
+    if (priceTonInput.value) updates.price_per_ton = parseFloat(priceTonInput.value);
+    if (priceBagInput.value) updates.price_per_bag = parseFloat(priceBagInput.value);
+    
+    try {
+        const response = await fetch(`${API_BASE}/admin/materials/${id}`, {
+            method: 'PUT',
+            headers: {
+                'Authorization': `Basic ${authToken}`,
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(updates)
+        });
+        
+        if (response.ok) {
+            showStatus('✅ Цена обновлена!', 'success');
+            loadMaterials();
+        } else {
+            showStatus('❌ Ошибка обновления', 'error');
+        }
+    } catch (error) {
+        showStatus('❌ Ошибка подключения', 'error');
+    }
+}
+
+async function deleteMaterial(id) {
+    if (!confirm('Удалить материал?')) return;
+    
+    try {
+        const response = await fetch(`${API_BASE}/admin/materials/${id}`, {
+            method: 'DELETE',
+            headers: { 'Authorization': `Basic ${authToken}` }
+        });
+        
+        if (response.ok) {
+            showStatus('✅ Материал удалён!', 'success');
+            loadMaterials();
+        } else {
+            showStatus('❌ Ошибка удаления', 'error');
+        }
+    } catch (error) {
+        showStatus('❌ Ошибка подключения', 'error');
+    }
+}
+
+async function createMaterial() {
+    const data = {
+        key_name: document.getElementById('newKeyName').value,
+        name: document.getElementById('newName').value,
+        price_per_ton: parseFloat(document.getElementById('newPriceTon').value) || null,
+        price_per_bag: parseFloat(document.getElementById('newPriceBag').value) || null,
+        unit: document.getElementById('newUnit').value,
+        description: document.getElementById('newDesc').value,
+        type: document.getElementById('newType').value
+    };
+    
+    if (!data.key_name || !data.name || !data.unit) {
+        showStatus('❌ Заполните ключ, название и единицу измерения!', 'error');
+        return;
+    }
+    
+    try {
+        const response = await fetch(`${API_BASE}/admin/materials`, {
+            method: 'POST',
+            headers: {
+                'Authorization': `Basic ${authToken}`,
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(data)
+        });
+        
+        if (response.ok) {
+            showStatus('✅ Материал создан!', 'success');
+            loadMaterials();
+            document.getElementById('newKeyName').value = '';
+            document.getElementById('newName').value = '';
+            document.getElementById('newPriceTon').value = '';
+            document.getElementById('newPriceBag').value = '';
+            document.getElementById('newUnit').value = '';
+            document.getElementById('newDesc').value = '';
+        } else {
+            const error = await response.json();
+            showStatus(`❌ Ошибка: ${error.detail}`, 'error');
+        }
+    } catch (error) {
+        showStatus('❌ Ошибка подключения', 'error');
+    }
+}
+
+async function loadZones() {
+    const container = document.getElementById('zonesTable');
+    container.innerHTML = '<div class="loading">Загрузка...</div>';
+    
+    try {
+        const response = await fetch(`${API_BASE}/admin/zones`, {
+            headers: { 'Authorization': `Basic ${authToken}` }
+        });
+        
+        if (response.ok) {
+            const zones = await response.json();
+            renderZonesTable(zones);
+        } else {
+            container.innerHTML = '<div class="status error">Ошибка загрузки</div>';
+        }
+    } catch (error) {
+        container.innerHTML = '<div class="status error">Ошибка подключения</div>';
+    }
+}
+
+function renderZonesTable(zones) {
+    const container = document.getElementById('zonesTable');
+    
+    if (zones.length === 0) {
+        container.innerHTML = '<div class="loading">Нет зон</div>';
+        return;
+    }
+    
+    let html = `<table>
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Название</th>
+                    <th>Цена доставки (руб)</th>
+                    <th>Примечание</th>
+                    <th>Действия</th>
+                </tr>
+            </thead>
+            <tbody>`;
+    
+    for (const z of zones) {
+        html += `<tr>
+                    <td><strong>${z.id}</strong></td>
+                    <td><strong style="color: #2d5a3b;">${escapeHtml(z.name)}</strong></td>
+                    <td style="min-width: 150px;">
+                        <input type="number" id="zonePrice_${z.id}" value="${z.base_price}" step="500" class="price-input">
+                    </td>
+                    <td>${escapeHtml(z.note || '-')}</td>
+                    <td class="action-buttons">
+                        <button class="btn btn-sm btn-edit" onclick="updateZone(${z.id})">
+                            ✏️ Редактировать
+                        </button>
+                        <button class="btn btn-sm btn-delete" onclick="deleteZone(${z.id})">
+                            🗑️ Удалить
+                        </button>
+                    </td>
+                </tr>`;
+    }
+    
+    html += `</tbody>
+            </table>`;
+    container.innerHTML = html;
+}
+
+function escapeHtml(text) {
+    if (!text) return '';
+    const div = document.createElement('div');
+    div.textContent = text;
+    return div.innerHTML;
+}
+
+async function updateZone(id) {
+    const priceInput = document.getElementById(`zonePrice_${id}`);
+    const base_price = parseInt(priceInput.value);
+    
+    try {
+        const response = await fetch(`${API_BASE}/admin/zones/${id}`, {
+            method: 'PUT',
+            headers: {
+                'Authorization': `Basic ${authToken}`,
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ base_price })
+        });
+        
+        if (response.ok) {
+            showStatus('✅ Цена доставки обновлена!', 'success');
+            loadZones();
+        } else {
+            showStatus('❌ Ошибка обновления', 'error');
+        }
+    } catch (error) {
+        showStatus('❌ Ошибка подключения', 'error');
+    }
+}
+
+async function deleteZone(id) {
+    if (!confirm('Удалить зону?')) return;
+    
+    try {
+        const response = await fetch(`${API_BASE}/admin/zones/${id}`, {
+            method: 'DELETE',
+            headers: { 'Authorization': `Basic ${authToken}` }
+        });
+        
+        if (response.ok) {
+            showStatus('✅ Зона удалена!', 'success');
+            loadZones();
+        } else {
+            showStatus('❌ Ошибка удаления', 'error');
+        }
+    } catch (error) {
+        showStatus('❌ Ошибка подключения', 'error');
+    }
+}
+
+async function createZone() {
+    const data = {
+        key_name: document.getElementById('newZoneKey').value,
+        name: document.getElementById('newZoneName').value,
+        base_price: parseInt(document.getElementById('newZonePrice').value),
+        note: document.getElementById('newZoneNote').value || null
+    };
+    
+    if (!data.key_name || !data.name || !data.base_price) {
+        showStatus('❌ Заполните ключ, название и цену!', 'error');
+        return;
+    }
+    
+    try {
+        const response = await fetch(`${API_BASE}/admin/zones`, {
+            method: 'POST',
+            headers: {
+                'Authorization': `Basic ${authToken}`,
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(data)
+        });
+        
+        if (response.ok) {
+            showStatus('✅ Зона создана!', 'success');
+            loadZones();
+            document.getElementById('newZoneKey').value = '';
+            document.getElementById('newZoneName').value = '';
+            document.getElementById('newZonePrice').value = '';
+            document.getElementById('newZoneNote').value = '';
+        } else {
+            const error = await response.json();
+            showStatus(`❌ Ошибка: ${error.detail}`, 'error');
+        }
+    } catch (error) {
+        showStatus('❌ Ошибка подключения', 'error');
+    }
+}
+
+function showTab(tabName) {
+    const tabs = document.querySelectorAll('.tab-content');
+    const btns = document.querySelectorAll('.tab-btn');
+    
+    tabs.forEach(tab => {
+        tab.classList.remove('active');
+    });
+    
+    btns.forEach(btn => {
+        btn.classList.remove('active');
+    });
+    
+    const activeTab = document.getElementById(`${tabName}Tab`);
+    if (activeTab) {
+        activeTab.classList.add('active');
+    }
+    
+    const activeBtn = Array.from(btns).find(btn => {
+        return btn.textContent.includes(tabName === 'materials' ? 'Материалы' : 'Доставки');
+    });
+    if (activeBtn) {
+        activeBtn.classList.add('active');
+    }
+}
+
+function showStatus(message, type) {
+    const statusDiv = document.getElementById('status');
+    statusDiv.textContent = message;
+    statusDiv.className = `status ${type}`;
+    setTimeout(() => {
+        statusDiv.style.display = 'none';
+        statusDiv.className = 'status';
+    }, 3000);
+    statusDiv.style.display = 'block';
+}

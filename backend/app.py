@@ -6,8 +6,11 @@ import os
 import re
 from materials import find_material, get_material_price, get_material_name, get_all_materials
 from delivery_zones import detect_delivery_zone, calculate_delivery_price, get_districts_list
+from admin import router as admin_router
 
 app = FastAPI(title="Неруд Консультант", version="1.0.0")
+
+app.include_router(admin_router)
 
 app.add_middleware(
     CORSMiddleware,

@@ -190,28 +190,26 @@ def get_intent_ml(text):
 def extract_material_from_price_query(text):
     text_lower = text.lower()
     
-    price_words = ["цена", "почём", "сколько", "стоит", "стоимость", "рублей"]
-    has_price_word = any(word in text_lower for word in price_words)
-    
-    if not has_price_word:
+    price_words = ["цена", "почём", "сколько", "стоит", "стоимость", "руб"]
+    if not any(word in text_lower for word in price_words):
         return None
     
     materials = get_all_materials()
     
     for material_key, material_info in materials.items():
         material_name = material_info["name"].lower()
-        
         if material_name in text_lower:
             return material_key
-        
-        material_key_lower = material_key.lower()
-        if material_key_lower in text_lower:
+
+    for material_key in materials.keys():
+        if material_key in text_lower:
             return material_key
-        
-        for word in material_name.split():
-            if word in text_lower and len(word) > 3:
+
+    for material_key, material_info in materials.items():
+        for part in material_info["name"].lower().split():
+            if len(part) > 3 and part in text_lower:
                 return material_key
-    
+
     return None
 
 def get_response(intent, text, user_id):
@@ -219,18 +217,21 @@ def get_response(intent, text, user_id):
         user_sessions[user_id] = {}
     
     session = user_sessions[user_id]
-    
-    if session.get("awaiting_district"):
-        zone_key, zone_name = detect_delivery_zone(text)
+
+    material = find_material(text)
+    quantity_data = extract_quantity(text, session.get("pending_material"))
+    zone_key, zone_name = detect_delivery_zone(text)
+
+    if session.get("awaiting_district") or session.get("awaiting_quantity"):
+        if intent == "greeting":
+            intent = "price"
         if zone_key:
             material = session.get("pending_material")
-            quantity_data = session.get("pending_quantity")
-            
+            quantity_data = session.get("pending_quantity") 
             if material and quantity_data:
                 material_price, price_unit = get_material_price(material)
                 quantity = quantity_data["value"]
                 material_name = get_material_name(material)
-                
                 if price_unit == "bag":
                     delivery_price = calculate_delivery_price(zone_key, "сотые_кварталы", material)
                     total = (material_price * quantity) + delivery_price
@@ -404,14 +405,39 @@ def get_response(intent, text, user_id):
         
         else:
             materials = get_all_materials()
-            ton_materials = [f"• {info['name']}: {info['price_per_ton']} руб/{info['unit']}" for m, info in materials.items() if info['type'] == 'ton' and info.get('price_per_ton')]
-            bag_materials = [f"• {info['name']}: {info['price_per_bag']} руб/{info['unit']}" for m, info in materials.items() if info['type'] == 'bag' and info.get('price_per_bag')]
-            materials_list = "\n".join(ton_materials + bag_materials)
-            return f"""💰 Наши материалы:
-
-{materials_list}
-
-❓ Какой материал вас интересует? Например: "щебень", "песок", "гравий" """
+            
+            ton_items = []
+            bag_items = []
+            
+            for m, info in materials.items():
+                if info['type'] == 'ton' and info.get('price_per_ton'):
+                    price = int(info['price_per_ton'])
+                    price_str = f"{price:,}".replace(",", " ")
+                    ton_items.append(f'<div class="price-row"><span class="price-name">• {info["name"]}</span><span class="price-value">{price_str} ₽</span></div>')
+                elif info['type'] == 'bag' and info.get('price_per_bag'):
+                    price = int(info['price_per_bag'])
+                    price_str = f"{price:,}".replace(",", " ")
+                    bag_items.append(f'<div class="price-row"><span class="price-name">• {info["name"]}</span><span class="price-value">{price_str} ₽ / мешок</span></div>')
+            
+            result = '<div class="price-list">'
+            result += '<strong>💰 ПРАЙС-ЛИСТ</strong><br><br>'
+            
+            if ton_items:
+                result += '🪨 <strong>Сыпучие материалы (за тонну)</strong><br>'
+                result += '━━━━━━━━━━━━━━━━━━━━<br>'
+                result += ''.join(ton_items) + '<br>'
+            
+            if bag_items:
+                result += '💎 <strong>В мешках</strong><br>'
+                result += '━━━━━━━━━━━━━━━━━━━━<br>'
+                result += ''.join(bag_items) + '<br>'
+            
+            result += '<strong>💡 Напишите:</strong><br>'
+            result += '"цена щебня" или "2 тонны песка"<br>'
+            result += '🚛 <strong>Рассчитаю с доставкой</strong>'
+            result += '</div>'
+            
+            return result
     
     elif intent == "delivery":
         zones = get_districts_list()

@@ -350,26 +350,6 @@ async function addMicrodistrictToZone(zoneId) {
     }
 }
 
-async function addMicrodistrictToZone(zoneId) {
-    const nameInput = document.getElementById(`microName_${zoneId}`);
-    const slangInput = document.getElementById(`microSlang_${zoneId}`);
-    
-    const name = nameInput.value.trim();
-    const slangName = slangInput.value.trim();
-    
-    if (!name) {
-        showStatus('❌ Введите название микрорайона!', 'error');
-        return;
-    }
-    
-    const success = await addMicrodistrict(zoneId, name, slangName);
-    if (success) {
-        nameInput.value = '';
-        slangInput.value = '';
-        loadZones(); 
-    }
-}
-
 function escapeHtml(text) {
     if (!text) return '';
     const div = document.createElement('div');
@@ -502,8 +482,6 @@ async function addMicrodistrict(zoneId, name, slangName) {
 }
 
 async function deleteMicrodistrict(id) {
-    if (!confirm('Удалить микрорайон?')) return false;
-    
     try {
         const response = await fetch(`${API_BASE}/admin/microdistricts/${id}`, {
             method: 'DELETE',
@@ -511,7 +489,6 @@ async function deleteMicrodistrict(id) {
         });
         
         if (response.ok) {
-            showStatus('✅ Микрорайон удалён!', 'success');
             return true;
         } else {
             showStatus('❌ Ошибка удаления', 'error');

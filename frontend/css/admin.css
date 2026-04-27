@@ -510,6 +510,15 @@ td input:focus {
     font-size: 12px;
 }
 
+.loading-micro {
+    color: #999;
+    font-style: italic;
+    font-size: 12px;
+    padding: 8px;
+    display: block;
+    text-align: center;
+}
+
 @media (max-width: 768px) {
     .microdistricts-cell {
         min-width: 200px;

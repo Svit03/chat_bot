@@ -9,6 +9,32 @@ body {
     background: #f0f2f5;
     padding: 16px;
 }
+
+.btn {
+    padding: 8px 16px;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 13px;
+    font-weight: 500;
+    transition: all 0.3s;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+}
+
+.btn-sm {
+    padding: 6px 12px;
+    font-size: 12px;
+}
+
+.btn-edit,
+.btn-delete {
+    min-width: 110px;
+    height: 32px;
+}
+
 .btn-edit {
     background: #3498db;
     color: white;
@@ -39,22 +65,24 @@ body {
     transform: translateY(-1px);
 }
 
-.badge-ton {
-    background: #e3f2fd;
-    color: #1976d2;
+.badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
     padding: 4px 10px;
     border-radius: 20px;
     font-size: 12px;
-    font-weight: 500;
+    font-weight: 600;
+}
+
+.badge-ton {
+    background: #e3f2fd;
+    color: #1976d2;
 }
 
 .badge-bag {
     background: #fce4ec;
     color: #c2185b;
-    padding: 4px 10px;
-    border-radius: 20px;
-    font-size: 12px;
-    font-weight: 500;
 }
 
 .tab-content {
@@ -80,10 +108,14 @@ body {
     font-size: 14px;
 }
 
-td .action-buttons {
+.action-buttons {
     display: flex;
     gap: 8px;
-    flex-wrap: wrap;
+    flex-wrap: nowrap;
+}
+
+td.action-buttons {
+    min-width: 240px;
 }
 
 .table-container {
@@ -181,23 +213,6 @@ table {
     to { opacity: 1; transform: translateY(0); }
 }
 
-.materials-grid {
-    display: none;
-}
-
-.table-container {
-    background: white;
-    border-radius: 16px;
-    overflow-x: auto;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-}
-
-table {
-    width: 100%;
-    border-collapse: collapse;
-    min-width: 600px;
-}
-
 th {
     background: #f8f9fa;
     padding: 14px 12px;
@@ -231,67 +246,6 @@ td input:focus {
     outline: none;
     border-color: #2d5a3b;
     box-shadow: 0 0 0 2px rgba(45,90,59,0.1);
-}
-
-.btn {
-    padding: 8px 16px;
-    border: none;
-    border-radius: 8px;
-    cursor: pointer;
-    font-size: 13px;
-    font-weight: 500;
-    transition: all 0.3s;
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-}
-
-.btn-sm {
-    padding: 6px 12px;
-    font-size: 12px;
-}
-
-.btn-primary {
-    background: #2d5a3b;
-    color: white;
-}
-
-.btn-primary:hover {
-    background: #1a472a;
-    transform: translateY(-1px);
-}
-
-.btn-edit {
-    background: #3498db;
-    color: white;
-}
-
-.btn-edit:hover {
-    background: #2980b9;
-}
-
-.btn-delete {
-    background: #e74c3c;
-    color: white;
-}
-
-.btn-delete:hover {
-    background: #c0392b;
-}
-
-.btn-add {
-    background: #27ae60;
-    color: white;
-}
-
-.btn-add:hover {
-    background: #219a52;
-}
-
-.action-buttons {
-    display: flex;
-    gap: 8px;
-    flex-wrap: wrap;
 }
 
 .add-form {
@@ -382,63 +336,47 @@ td input:focus {
     background: #1a472a;
 }
 
-.badge {
-    display: inline-block;
-    padding: 4px 8px;
-    border-radius: 20px;
-    font-size: 11px;
-    font-weight: 600;
-}
-
-.badge-ton {
-    background: #e3f2fd;
-    color: #1976d2;
-}
-
-.badge-bag {
-    background: #fce4ec;
-    color: #c2185b;
-}
-
 @media (max-width: 768px) {
     body {
         padding: 12px;
     }
-    
+
     .header h1 {
         font-size: 20px;
     }
-    
+
     .tab-btn {
         padding: 8px 16px;
         font-size: 13px;
     }
-    
+
     th, td {
         padding: 10px 8px;
         font-size: 13px;
     }
-    
+
     td input {
         min-width: 60px;
         padding: 6px;
     }
-    
+
     .btn-sm {
         padding: 4px 8px;
         font-size: 11px;
     }
-    
+
     .form-grid {
         grid-template-columns: 1fr;
     }
-    
+
     .action-buttons {
         flex-direction: column;
+        gap: 6px;
     }
-    
+
     .action-buttons button {
         width: 100%;
+        min-width: unset;
     }
 }
 
@@ -523,11 +461,11 @@ td input:focus {
     .microdistricts-cell {
         min-width: 200px;
     }
-    
+
     .add-micro-form {
         flex-direction: column;
     }
-    
+
     .micro-input {
         width: 100%;
     }

@@ -75,8 +75,8 @@ function renderMaterialsTable(materials) {
         const priceBag = m.price_per_bag ?? '';
 
         const typeBadge = m.type === 'ton' 
-            ? '<span class="badge badge-ton">📦 Сыпучий</span>' 
-            : '<span class="badge badge-bag">🛍️ Мешковый</span>';
+            ? '<span class="badge badge-ton">🪨 Сыпучие материалы</span>' 
+            : '<span class="badge badge-bag">🛍️ В мешках</span>';
         
         html += `
         <tr>

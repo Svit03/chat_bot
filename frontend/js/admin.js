@@ -232,7 +232,7 @@ async function loadZones() {
     }
 }
 
-function renderZonesTable(zones) {
+async function renderZonesTable(zones) {
     const container = document.getElementById('zonesTable');
     
     if (zones.length === 0) {
@@ -241,39 +241,78 @@ function renderZonesTable(zones) {
     }
     
     let html = `<table>
-            <thead>
-                <tr>
-                    <th>ID</th>
-                    <th>Название</th>
-                    <th>Цена доставки (руб)</th>
-                    <th>Примечание</th>
-                    <th>Действия</th>
-                </tr>
-            </thead>
-            <tbody>`;
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Название</th>
+                <th>Цена доставки (руб)</th>
+                <th>Примечание</th>
+                <th>Микрорайоны</th>
+                <th>Действия</th>
+            </tr>
+        </thead>
+        <tbody>`;
     
     for (const z of zones) {
+        const microdistricts = await loadMicrodistricts(z.id);
+        const microdistrictsHtml = microdistricts.map(md => 
+            `<div class="microdistrict-item">
+                <span>📍 ${escapeHtml(md.name)}${md.slang_name ? ` (${escapeHtml(md.slang_name)})` : ''}</span>
+                <button class="btn-micro-delete" onclick="deleteMicrodistrict(${md.id})">🗑️</button>
+            </div>`
+        ).join('');
+        
         html += `<tr>
-                    <td><strong>${z.id}</strong></td>
-                    <td><strong style="color: #2d5a3b;">${escapeHtml(z.name)}</strong></td>
-                    <td style="min-width: 150px;">
-                        <input type="number" id="zonePrice_${z.id}" value="${z.base_price}" step="500" class="price-input">
-                    </td>
-                    <td>${escapeHtml(z.note || '-')}</td>
-                    <td class="action-buttons">
-                        <button class="btn btn-sm btn-edit" onclick="updateZone(${z.id})">
-                            ✏️ Редактировать
-                        </button>
-                        <button class="btn btn-sm btn-delete" onclick="deleteZone(${z.id})">
-                            🗑️ Удалить
-                        </button>
-                    </td>
-                </tr>`;
+            <td><strong>${z.id}</strong></td>
+            <td><strong style="color: #2d5a3b;">${escapeHtml(z.name)}</strong></td>
+            <td style="min-width: 150px;">
+                <input type="number" id="zonePrice_${z.id}" value="${z.base_price}" step="500" class="price-input">
+            </td>
+            <td>${escapeHtml(z.note || '-')}</td>
+            <td class="microdistricts-cell">
+                <div class="microdistricts-list">
+                    ${microdistrictsHtml || '<span class="empty-micro">Нет микрорайонов</span>'}
+                </div>
+                <div class="add-micro-form" style="margin-top: 10px;">
+                    <input type="text" id="microName_${z.id}" placeholder="Название" class="micro-input">
+                    <input type="text" id="microSlang_${z.id}" placeholder="Народное название" class="micro-input">
+                    <button class="btn btn-sm btn-add" onclick="addMicrodistrictToZone(${z.id})">➕ Добавить</button>
+                </div>
+            </td>
+            <td class="action-buttons">
+                <button class="btn btn-sm btn-edit" onclick="updateZone(${z.id})">
+                    ✏️ Сохранить
+                </button>
+                <button class="btn btn-sm btn-delete" onclick="deleteZone(${z.id})">
+                    🗑️ Удалить
+                </button>
+            </td>
+        </tr>`;
     }
     
     html += `</tbody>
-            </table>`;
+            划~~`;
     container.innerHTML = html;
+}
+
+async function addMicrodistrictToZone(zoneId) {
+    const nameInput = document.getElementById(`microName_${zoneId}`);
+    const slangInput = document.getElementById(`microSlang_${zoneId}`);
+    
+    const name = nameInput.value.trim();
+    const slangName = slangInput.value.trim();
+    
+    if (!name) {
+        showStatus('❌ Введите название микрорайона!', 'error');
+        return;
+    }
+    
+    const success = await addMicrodistrict(zoneId, name, slangName);
+    if (success) {
+        nameInput.value = '';
+        slangInput.value = '';
+        loadZones(); 
+    }
 }
 
 function escapeHtml(text) {
@@ -364,6 +403,68 @@ async function createZone() {
         }
     } catch (error) {
         showStatus('❌ Ошибка подключения', 'error');
+    }
+}
+
+async function loadMicrodistricts(zoneId) {
+    try {
+        const response = await fetch(`${API_BASE}/admin/microdistricts/${zoneId}`, {
+            headers: { 'Authorization': `Basic ${authToken}` }
+        });
+        
+        if (response.ok) {
+            return await response.json();
+        }
+        return [];
+    } catch (error) {
+        console.error('Ошибка загрузки микрорайонов:', error);
+        return [];
+    }
+}
+
+async function addMicrodistrict(zoneId, name, slangName) {
+    try {
+        const response = await fetch(`${API_BASE}/admin/microdistricts`, {
+            method: 'POST',
+            headers: {
+                'Authorization': `Basic ${authToken}`,
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ zone_id: zoneId, name: name, slang_name: slangName })
+        });
+        
+        if (response.ok) {
+            showStatus('✅ Микрорайон добавлен!', 'success');
+            return true;
+        } else {
+            showStatus('❌ Ошибка добавления микрорайона', 'error');
+            return false;
+        }
+    } catch (error) {
+        showStatus('❌ Ошибка подключения', 'error');
+        return false;
+    }
+}
+
+async function deleteMicrodistrict(id) {
+    if (!confirm('Удалить микрорайон?')) return false;
+    
+    try {
+        const response = await fetch(`${API_BASE}/admin/microdistricts/${id}`, {
+            method: 'DELETE',
+            headers: { 'Authorization': `Basic ${authToken}` }
+        });
+        
+        if (response.ok) {
+            showStatus('✅ Микрорайон удалён!', 'success');
+            return true;
+        } else {
+            showStatus('❌ Ошибка удаления', 'error');
+            return false;
+        }
+    } catch (error) {
+        showStatus('❌ Ошибка подключения', 'error');
+        return false;
     }
 }
 

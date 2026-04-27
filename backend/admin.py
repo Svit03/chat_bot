@@ -177,3 +177,56 @@ async def delete_zone(zone_id: int, admin: str = Depends(verify_admin)):
         return {"message": "Зона удалена"}
     finally:
         db.close()
+
+from database import Microdistrict
+
+@router.get("/microdistricts/{zone_id}")
+async def get_microdistricts(zone_id: int, admin: str = Depends(verify_admin)):
+    db = SessionLocal()
+    try:
+        microdistricts = db.query(Microdistrict).filter(Microdistrict.zone_id == zone_id).all()
+        return [
+            {
+                "id": md.id,
+                "name": md.name,
+                "slang_name": md.slang_name,
+                "zone_id": md.zone_id
+            }
+            for md in microdistricts
+        ]
+    finally:
+        db.close()
+
+class MicrodistrictCreate(BaseModel):
+    zone_id: int
+    name: str
+    slang_name: Optional[str] = None
+
+@router.post("/microdistricts")
+async def create_microdistrict(data: MicrodistrictCreate, admin: str = Depends(verify_admin)):
+    db = SessionLocal()
+    try:
+        microdistrict = Microdistrict(
+            zone_id=data.zone_id,
+            name=data.name,
+            slang_name=data.slang_name
+        )
+        db.add(microdistrict)
+        db.commit()
+        return {"message": "Микрорайон добавлен", "id": microdistrict.id}
+    finally:
+        db.close()
+
+@router.delete("/microdistricts/{microdistrict_id}")
+async def delete_microdistrict(microdistrict_id: int, admin: str = Depends(verify_admin)):
+    db = SessionLocal()
+    try:
+        microdistrict = db.query(Microdistrict).filter(Microdistrict.id == microdistrict_id).first()
+        if not microdistrict:
+            raise HTTPException(status_code=404, detail="Микрорайон не найден")
+        
+        db.delete(microdistrict)
+        db.commit()
+        return {"message": "Микрорайон удалён"}
+    finally:
+        db.close()

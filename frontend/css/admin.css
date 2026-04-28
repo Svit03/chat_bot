@@ -457,6 +457,80 @@ td input:focus {
     text-align: center;
 }
 
+.delivery-types {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+    margin-bottom: 24px;
+}
+
+.delivery-type-card {
+    background: white;
+    border-radius: 16px;
+    padding: 16px 20px;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+
+.delivery-type-icon {
+    font-size: 40px;
+}
+
+.delivery-type-info h3 {
+    color: #2d5a3b;
+    margin-bottom: 4px;
+    font-size: 16px;
+}
+
+.delivery-type-info p {
+    color: #666;
+    font-size: 12px;
+    margin-bottom: 8px;
+}
+
+.bag-delivery-setting {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+    margin-top: 8px;
+}
+
+.bag-delivery-setting label {
+    font-weight: 500;
+    color: #333;
+    font-size: 13px;
+}
+
+.bag-delivery-setting input {
+    width: 120px;
+    padding: 6px 10px;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    font-size: 14px;
+}
+
+.bag-delivery-note {
+    font-size: 11px;
+    color: #27ae60;
+    background: #e8f5e9;
+    padding: 3px 8px;
+    border-radius: 12px;
+}
+
+@media (max-width: 768px) {
+    .delivery-types {
+        grid-template-columns: 1fr;
+    }
+    
+    .bag-delivery-setting {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+}
+
 @media (max-width: 768px) {
     .microdistricts-cell {
         min-width: 200px;

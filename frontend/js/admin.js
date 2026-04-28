@@ -28,6 +28,45 @@ async function login() {
     }
 }
 
+async function loadBagDeliveryPrice() {
+    try {
+        const response = await fetch(`${API_BASE}/admin/settings/bag-delivery`, {
+            headers: { 'Authorization': `Basic ${authToken}` }
+        });
+        
+        if (response.ok) {
+            const data = await response.json();
+            const input = document.getElementById('bagDeliveryPrice');
+            if (input) input.value = data.price_other_districts;
+        }
+    } catch (error) {
+        console.error('Ошибка загрузки настроек:', error);
+    }
+}
+
+async function updateBagDelivery() {
+    const price = parseInt(document.getElementById('bagDeliveryPrice').value);
+    
+    try {
+        const response = await fetch(`${API_BASE}/admin/settings/bag-delivery`, {
+            method: 'PUT',
+            headers: {
+                'Authorization': `Basic ${authToken}`,
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ price_other_districts: price })
+        });
+        
+        if (response.ok) {
+            showStatus('✅ Стоимость доставки мешковых материалов обновлена!', 'success');
+        } else {
+            showStatus('❌ Ошибка обновления', 'error');
+        }
+    } catch (error) {
+        showStatus('❌ Ошибка подключения', 'error');
+    }
+}
+
 async function loadMaterials() {
     const container = document.getElementById('materialsTable');
     container.innerHTML = '<div class="loading">Загрузка...</div>';
@@ -223,7 +262,7 @@ async function loadZones() {
         
         if (response.ok) {
             const zones = await response.json();
-            await renderZonesTable(zones);  // Добавлен await
+            await renderZonesTable(zones);  
         } else {
             container.innerHTML = '<div class="status error">Ошибка загрузки</div>';
         }
@@ -245,7 +284,8 @@ function renderZonesTable(zones) {
             <tr>
                 <th>ID</th>
                 <th>Название</th>
-                <th>Цена доставки (руб)</th>
+                <th>🪨 Цена доставки сыпучих (руб)</th>
+                <th>💎 Цена доставки мешков (руб)</th>
                 <th>Примечание</th>
                 <th>Микрорайоны</th>
                 <th>Действия</th>
@@ -254,11 +294,15 @@ function renderZonesTable(zones) {
         <tbody>`;
     
     for (const z of zones) {
+        const bagPrice = z.bag_price !== undefined && z.bag_price !== null ? z.bag_price : 700;
         html += `<tr>
             <td><strong>${z.id}</strong></td>
             <td><strong style="color: #2d5a3b;">${escapeHtml(z.name)}</strong></td>
-            <td style="min-width: 150px;">
-                <input type="number" id="zonePrice_${z.id}" value="${z.base_price}" step="500" class="price-input">
+            <td style="min-width: 130px;">
+                <input type="number" id="zonePrice_${z.id}" value="${z.base_price}" step="500" class="price-input" style="width: 110px;">
+            </td>
+            <td style="min-width: 130px;">
+                <input type="number" id="zoneBagPrice_${z.id}" value="${bagPrice}" step="100" class="price-input" style="width: 110px;">
             </td>
             <td>${escapeHtml(z.note || '-')}</td>
             <td class="microdistricts-cell">
@@ -279,14 +323,13 @@ function renderZonesTable(zones) {
                     🗑️ Удалить
                 </button>
              </td>
-         </tr>`;
+        </tr>`;
     }
     
     html += `</tbody>
-         </table>`;
+        </table>`;
     container.innerHTML = html;
     
-    // Загружаем микрорайоны для каждой зоны после отрисовки таблицы
     for (const z of zones) {
         loadMicrodistrictsIntoTable(z.id);
     }
@@ -359,7 +402,10 @@ function escapeHtml(text) {
 
 async function updateZone(id) {
     const priceInput = document.getElementById(`zonePrice_${id}`);
+    const bagPriceInput = document.getElementById(`zoneBagPrice_${id}`);
+    
     const base_price = parseInt(priceInput.value);
+    const bag_price = parseInt(bagPriceInput.value);
     
     try {
         const response = await fetch(`${API_BASE}/admin/zones/${id}`, {
@@ -368,11 +414,11 @@ async function updateZone(id) {
                 'Authorization': `Basic ${authToken}`,
                 'Content-Type': 'application/json'
             },
-            body: JSON.stringify({ base_price })
+            body: JSON.stringify({ base_price, bag_price })
         });
         
         if (response.ok) {
-            showStatus('✅ Цена доставки обновлена!', 'success');
+            showStatus('✅ Цены доставки обновлены!', 'success');
             loadZones();
         } else {
             showStatus('❌ Ошибка обновления', 'error');
@@ -407,6 +453,7 @@ async function createZone() {
         key_name: document.getElementById('newZoneKey').value,
         name: document.getElementById('newZoneName').value,
         base_price: parseInt(document.getElementById('newZonePrice').value),
+        bag_price: parseInt(document.getElementById('newZoneBagPrice').value) || 700,
         note: document.getElementById('newZoneNote').value || null
     };
     
@@ -431,6 +478,7 @@ async function createZone() {
             document.getElementById('newZoneKey').value = '';
             document.getElementById('newZoneName').value = '';
             document.getElementById('newZonePrice').value = '';
+            document.getElementById('newZoneBagPrice').value = '';
             document.getElementById('newZoneNote').value = '';
         } else {
             const error = await response.json();

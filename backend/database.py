@@ -23,12 +23,21 @@ class Material(Base):
 
 class DeliveryZone(Base):
     __tablename__ = "delivery_zones"
-    id = Column(Integer, primary_key=True)
-    key_name = Column(String(100), unique=True)
-    name = Column(String(200))
-    base_price = Column(Integer)
+    
+    id = Column(Integer, primary_key=True, index=True)
+    key_name = Column(String(100), unique=True, index=True, nullable=False)
+    name = Column(String(200), nullable=False)
+    base_price = Column(Integer, nullable=False)
+    bag_price = Column(Integer, default=700)
     coefficient = Column(Float, default=1.0)
     note = Column(Text)
+
+class Setting(Base):
+    __tablename__ = "settings"
+    
+    id = Column(Integer, primary_key=True)
+    key = Column(String(100), unique=True, nullable=False)
+    value = Column(String(500), nullable=False)
 
 class Microdistrict(Base):
     __tablename__ = "microdistricts"

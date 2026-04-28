@@ -3,6 +3,7 @@ from fastapi.security import HTTPBasic, HTTPBasicCredentials
 from pydantic import BaseModel
 from typing import Optional
 from database import SessionLocal, Material, DeliveryZone
+from database import SessionLocal, Material, DeliveryZone, Setting
 import secrets
 
 router = APIRouter(prefix="/admin", tags=["Admin Panel"])
@@ -23,6 +24,9 @@ def verify_admin(credentials: HTTPBasicCredentials = Depends(security)):
         )
     return credentials.username
 
+class BagDeliveryUpdate(BaseModel):
+    price_other_districts: int
+
 class MaterialUpdate(BaseModel):
     price_per_ton: Optional[float] = None
     price_per_bag: Optional[float] = None
@@ -39,6 +43,7 @@ class MaterialCreate(BaseModel):
 
 class ZoneUpdate(BaseModel):
     base_price: int
+    bag_price: Optional[int] = None
 
 class ZoneCreate(BaseModel):
     key_name: str
@@ -127,6 +132,7 @@ async def get_zones(admin: str = Depends(verify_admin)):
                 "key_name": z.key_name,
                 "name": z.name,
                 "base_price": z.base_price,
+                "bag_price": z.bag_price if hasattr(z, 'bag_price') else 700,
                 "coefficient": z.coefficient,
                 "note": z.note
             }
@@ -144,8 +150,10 @@ async def update_zone(zone_id: int, data: ZoneUpdate, admin: str = Depends(verif
             raise HTTPException(status_code=404, detail="Зона не найдена")
         
         zone.base_price = data.base_price
+        if data.bag_price is not None:
+            zone.bag_price = data.bag_price
         db.commit()
-        return {"message": "Цена доставки обновлена", "zone": zone.name}
+        return {"message": "Цены доставки обновлены", "zone": zone.name}
     finally:
         db.close()
 

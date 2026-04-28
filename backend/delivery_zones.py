@@ -42,7 +42,7 @@ def calculate_delivery_price(zone_key, loading_point_key, material_key=None):
         if material_key in ["доломит", "мраморный_щебень"]:
             if zone_key == "октябрьский":
                 return 0
-            return 700
+            return zone.bag_price if zone.bag_price else 700
         
         return zone.base_price
     finally:

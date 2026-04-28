@@ -63,13 +63,14 @@
                         <div class="loading">Загрузка...</div>
                     </div>
                 </div>
-                
+
                 <div class="add-form">
                     <h3>➕ Добавить зону доставки</h3>
                     <div class="form-grid">
                         <input type="text" id="newZoneKey" placeholder="Ключ (например: новый_район)">
                         <input type="text" id="newZoneName" placeholder="Название зоны">
-                        <input type="number" id="newZonePrice" placeholder="Цена доставки (руб)" step="500">
+                        <input type="number" id="newZonePrice" placeholder="Цена доставки сыпучих (руб)" step="500">
+                        <input type="number" id="newZoneBagPrice" placeholder="Цена доставки мешков (руб)" step="100">
                         <input type="text" id="newZoneNote" placeholder="Примечание">
                     </div>
                     <button class="btn btn-add" onclick="createZone()">➕ Создать зону</button>

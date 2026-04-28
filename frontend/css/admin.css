@@ -36,12 +36,12 @@ body {
 }
 
 .btn-edit {
-    background: #3498db;
+    background: #0088CC;
     color: white;
 }
 
 .btn-edit:hover {
-    background: #2980b9;
+    background: #54A9EB;
     transform: translateY(-1px);
 }
 
@@ -56,12 +56,12 @@ body {
 }
 
 .btn-add {
-    background: #27ae60;
+    background: #34C759;
     color: white;
 }
 
 .btn-add:hover {
-    background: #219a52;
+    background: #28a745;
     transform: translateY(-1px);
 }
 
@@ -77,7 +77,7 @@ body {
 
 .badge-ton {
     background: #e3f2fd;
-    color: #1976d2;
+    color: #0088CC;
 }
 
 .badge-bag {
@@ -137,7 +137,7 @@ table {
 }
 
 .header {
-    background: linear-gradient(135deg, #1a472a 0%, #2d5a3b 100%);
+    background: linear-gradient(135deg, #0088CC 0%, #007AFF 100%);
     color: white;
     padding: 20px;
     border-radius: 16px;
@@ -173,17 +173,18 @@ table {
     display: flex;
     align-items: center;
     gap: 8px;
+    color: #333;
 }
 
 .tab-btn:hover {
     background: #e8f5e9;
-    border-color: #2d5a3b;
+    border-color: #0088CC;
 }
 
 .tab-btn.active {
-    background: #2d5a3b;
+    background: #0088CC;
     color: white;
-    border-color: #2d5a3b;
+    border-color: #0088CC;
 }
 
 .status {
@@ -226,6 +227,7 @@ td {
     padding: 12px;
     border-bottom: 1px solid #eee;
     vertical-align: middle;
+    color: #000000;
 }
 
 tr:hover {
@@ -240,12 +242,13 @@ td input {
     border-radius: 8px;
     font-size: 14px;
     transition: all 0.3s;
+    color: #000000;
 }
 
 td input:focus {
     outline: none;
-    border-color: #2d5a3b;
-    box-shadow: 0 0 0 2px rgba(45,90,59,0.1);
+    border-color: #0088CC;
+    box-shadow: 0 0 0 2px rgba(0,136,204,0.1);
 }
 
 .add-form {
@@ -257,7 +260,7 @@ td input:focus {
 }
 
 .add-form h3 {
-    color: #2d5a3b;
+    color: #0088CC;
     margin-bottom: 16px;
     font-size: 18px;
     display: flex;
@@ -278,11 +281,12 @@ td input:focus {
     border: 1px solid #ddd;
     border-radius: 8px;
     font-size: 14px;
+    color: #000000;
 }
 
 .form-grid input:focus, .form-grid select:focus {
     outline: none;
-    border-color: #2d5a3b;
+    border-color: #0088CC;
 }
 
 .loading {
@@ -301,7 +305,7 @@ td input:focus {
 }
 
 .auth-form h2 {
-    color: #2d5a3b;
+    color: #0088CC;
     margin-bottom: 24px;
     text-align: center;
 }
@@ -317,13 +321,13 @@ td input:focus {
 
 .auth-form input:focus {
     outline: none;
-    border-color: #2d5a3b;
+    border-color: #0088CC;
 }
 
 .auth-form button {
     width: 100%;
     padding: 12px;
-    background: #2d5a3b;
+    background: #0088CC;
     color: white;
     border: none;
     border-radius: 12px;
@@ -333,7 +337,7 @@ td input:focus {
 }
 
 .auth-form button:hover {
-    background: #1a472a;
+    background: #54A9EB;
 }
 
 @media (max-width: 768px) {
@@ -405,6 +409,7 @@ td input:focus {
     padding: 6px 8px;
     border-bottom: 1px solid #f0f0f0;
     font-size: 13px;
+    color: #000000;
 }
 
 .microdistrict-item:last-child {
@@ -440,6 +445,7 @@ td input:focus {
     border: 1px solid #ddd;
     border-radius: 6px;
     font-size: 13px;
+    color: #000000;
 }
 
 .empty-micro {
@@ -479,7 +485,7 @@ td input:focus {
 }
 
 .delivery-type-info h3 {
-    color: #2d5a3b;
+    color: #0088CC;
     margin-bottom: 4px;
     font-size: 16px;
 }
@@ -514,7 +520,7 @@ td input:focus {
 
 .bag-delivery-note {
     font-size: 11px;
-    color: #27ae60;
+    color: #34C759;
     background: #e8f5e9;
     padding: 3px 8px;
     border-radius: 12px;
@@ -531,13 +537,19 @@ td input[type="checkbox"] {
 .free-delivery-section {
     margin-top: 30px;
     padding-top: 20px;
-    border-top: 2px solid var(--border-light);
+    border-top: 2px solid #e0e0e0;
 }
 
 .free-delivery-section h3 {
-    color: #2d5a3b;
+    color: #0088CC;
     margin-bottom: 8px;
     font-size: 18px;
+}
+
+.free-delivery-section h4 {
+    color: #333;
+    margin-bottom: 10px;
+    font-size: 16px;
 }
 
 .free-delivery-form {
@@ -571,12 +583,13 @@ td input[type="checkbox"] {
     border-radius: 8px;
     font-size: 14px;
     transition: all 0.3s;
+    color: #000000;
 }
 
 .free-micro-input:focus {
     outline: none;
-    border-color: #2d5a3b;
-    box-shadow: 0 0 0 2px rgba(45, 90, 59, 0.1);
+    border-color: #0088CC;
+    box-shadow: 0 0 0 2px rgba(0,136,204,0.1);
 }
 
 .free-micro-table {
@@ -589,12 +602,14 @@ td input[type="checkbox"] {
     padding: 12px;
     text-align: left;
     font-weight: 600;
+    color: #333;
     border-bottom: 2px solid #dee2e6;
 }
 
 .free-micro-table td {
     padding: 10px 12px;
     border-bottom: 1px solid #eee;
+    color: #000000;
 }
 
 .free-micro-table tr:hover {

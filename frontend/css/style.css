@@ -307,13 +307,15 @@ body {
 }
 
 .message_text {
-    max-width: 70%;
-    padding: 10px 14px;
+    max-width: 75%;
+    padding: 12px 16px;
     border-radius: 18px;
-    font-size: 15px;
+    font-size: 16px;
     line-height: 1.45;
     letter-spacing: -0.2px;
     transition: background 0.3s ease, color 0.3s ease;
+    word-wrap: break-word;
+    white-space: normal;
 }
 
 .message_bot .message_text {
@@ -326,6 +328,11 @@ body {
     background: linear-gradient(135deg, var(--primary-blue) 0%, var(--system-blue) 100%);
     color: var(--text-inverse);
     border-bottom-right-radius: 4px;
+}
+
+.message_text strong {
+    font-weight: 600;
+    color: var(--primary-blue);
 }
 
 .phone_link {
@@ -343,8 +350,109 @@ body {
     text-decoration: underline;
 }
 
-.message_text strong {
+.message_text .material-name {
+    font-size: 17px;
+    font-weight: 700;
+    color: var(--text-primary);
+    margin-bottom: 8px;
+    display: block;
+}
+
+.message_text .price-amount {
+    font-size: 22px;
+    font-weight: 700;
+    color: var(--system-blue);
+    margin: 6px 0;
+}
+
+.message_text .total-cost {
+    font-size: 20px;
+    font-weight: 700;
+    color: var(--system-blue);
+    margin: 8px 0 6px 0;
+}
+
+.message_text .delivery-cost {
+    display: inline-block;
+    background: rgba(0, 136, 204, 0.1);
+    padding: 4px 12px;
+    border-radius: 18px;
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--primary-blue);
+}
+
+.message_text .section-title {
     font-weight: 600;
+    color: var(--text-secondary);
+    margin: 10px 0 6px 0;
+    font-size: 13px;
+    display: inline-block;
+}
+
+.message_text .separator-line {
+    margin: 12px 0;
+    border: none;
+    height: 1px;
+    background: var(--border-light);
+}
+
+.message_text .district-item {
+    padding: 4px 0;
+    color: var(--text-primary);
+    font-size: 14px;
+    line-height: 1.4;
+}
+
+.message_text .district-name {
+    font-weight: 500;
+    color: var(--text-primary);
+}
+
+.message_text .example-query {
+    background: var(--bg-input);
+    padding: 8px 12px;
+    border-radius: 14px;
+    font-size: 13px;
+    color: var(--primary-blue);
+    margin: 8px 0;
+    display: inline-block;
+}
+
+.message_text .price-list {
+    background: transparent;
+    padding: 0;
+    margin: 0;
+}
+
+.message_text .price-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 6px 0;
+    gap: 12px;
+    border-bottom: 0.5px solid var(--border-light);
+}
+
+.message_text .price-row:last-child {
+    border-bottom: none;
+}
+
+.message_text .price-name {
+    text-align: left;
+    color: var(--text-primary);
+    font-size: 15px;
+}
+
+.message_text .price-value {
+    text-align: right;
+    font-weight: 600;
+    color: var(--system-blue);
+    white-space: nowrap;
+    font-size: 15px;
+    background: rgba(0, 136, 204, 0.1);
+    padding: 3px 10px;
+    border-radius: 18px;
 }
 
 .suggestions {
@@ -401,7 +509,7 @@ body {
     border: 0.5px solid var(--border-light);
     border-radius: 30px;
     outline: none;
-    font-size: 15px;
+    font-size: 16px;
     font-family: inherit;
     transition: all 0.2s ease;
     color: var(--text-primary);
@@ -522,71 +630,6 @@ body {
     font-size: 12px;
     color: var(--text-secondary);
 }
-.price-list {
-    background: var(--bg-message-bot);
-    padding: 12px 16px;
-    border-radius: 18px;
-    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-}
-
-.price-list strong {
-    color: var(--primary-blue);
-}
-
-.price-row {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 6px 0;
-    gap: 20px;
-    border-bottom: 1px solid var(--border-light);
-}
-
-.price-row:last-child {
-    border-bottom: none;
-}
-
-.price-name {
-    text-align: left;
-    color: var(--text-primary);
-    font-size: 14px;
-}
-
-.price-value {
-    text-align: right;
-    font-weight: 700;
-    color: var(--system-blue);
-    white-space: nowrap;
-    font-size: 14px;
-    background: rgba(0, 136, 204, 0.1);
-    padding: 2px 8px;
-    border-radius: 20px;
-}
-
-.message_text .price-list {
-    max-width: 100%;
-}
-
-@media (max-width: 600px) {
-    .price-row {
-        gap: 10px;
-    }
-    .price-name {
-        font-size: 13px;
-    }
-    .price-value {
-        font-size: 13px;
-        padding: 2px 6px;
-    }
-}
-
-[data-theme="dark"] .price-value {
-    background: rgba(0, 136, 204, 0.2);
-}
-
-[data-theme="dark"] .price-row {
-    border-bottom-color: var(--border-medium);
-}
 
 @media (max-width: 600px) {
     body {
@@ -684,7 +727,37 @@ body {
 
     .message_text {
         max-width: 85%;
+        padding: 10px 12px;
+        font-size: 15px;
+    }
+    
+    .message_text .material-name {
+        font-size: 16px;
+    }
+    
+    .message_text .price-amount {
+        font-size: 19px;
+    }
+    
+    .message_text .total-cost {
+        font-size: 17px;
+    }
+    
+    .message_text .price-row {
+        gap: 8px;
+    }
+    
+    .message_text .price-name {
         font-size: 14px;
+    }
+    
+    .message_text .price-value {
+        font-size: 14px;
+        padding: 2px 8px;
+    }
+    
+    .message_text .district-item {
+        font-size: 13px;
     }
 
     .suggestion_btn {
@@ -694,6 +767,10 @@ body {
 
     .input_area button {
         padding: 10px 18px;
+    }
+    
+    .input_area input {
+        font-size: 15px;
     }
 }
 
@@ -717,6 +794,14 @@ body {
     .theme_switch {
         padding: 5px 8px;
     }
+    
+    .message_text {
+        font-size: 14px;
+    }
+    
+    .message_text .price-amount {
+        font-size: 17px;
+    }
 }
 
 @media (min-width: 601px) and (max-width: 1024px) {
@@ -727,4 +812,16 @@ body {
     .delivery_info {
         gap: 16px;
     }
+}
+
+[data-theme="dark"] .message_text .price-value {
+    background: rgba(0, 136, 204, 0.2);
+}
+
+[data-theme="dark"] .message_text .price-row {
+    border-bottom-color: var(--border-medium);
+}
+
+[data-theme="dark"] .example-query {
+    background: var(--bg-input);
 }

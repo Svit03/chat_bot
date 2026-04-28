@@ -124,18 +124,17 @@ def format_price_calculation_simple(material_name, quantity, material_price, del
     else:
         ton_text = "тонн"
     
-    return f"""🚛 РАСЧЁТ СТОИМОСТИ
-
-📦 Материал: {material_name}
-⚖️ Количество: {quantity:.1f} {ton_text}
-
-💰 Стоимость материала: {material_price:,.0f} руб/тонна × {quantity:.1f} = {material_price * quantity:,.0f} руб
-🚚 Доставка: {delivery_price:,.0f} руб
-
-━━━━━━━━━━━━━━━━━━━━
-💰 ИТОГО: {total:,.0f} руб
-
-📞 Для заказа звоните: 575677"""
+    return f"""<div class="material-name">📦 {material_name}</div>
+<div class="price-amount">{material_price:,.0f} ₽ / тонна</div>
+<div class="section-title"><span class="section-icon">⚖️</span> Количество</div>
+<div>• {quantity:.1f} {ton_text}</div>
+<div class="section-title"><span class="section-icon">💰</span> Стоимость материала</div>
+<div>• {material_price:,.0f} ₽ × {quantity:.1f} = <strong>{material_price * quantity:,.0f} ₽</strong></div>
+<div class="section-title"><span class="section-icon">🚚</span> Доставка</div>
+<div>• {delivery_price:,.0f} ₽</div>
+<div class="separator-line"></div>
+<div class="total-cost">💰 ИТОГО: {total:,.0f} ₽</div>
+<div class="delivery-cost">📞 Для заказа звоните: 575677</div>"""
 
 def format_price_calculation_bag(material_name, quantity, material_price, delivery_price, total):
     if quantity == 1:
@@ -145,19 +144,18 @@ def format_price_calculation_bag(material_name, quantity, material_price, delive
     else:
         bag_text = "мешков"
     
-    delivery_text = "БЕСПЛАТНО" if delivery_price == 0 else f"{delivery_price:,.0f} руб"
-    return f"""🚛 РАСЧЁТ СТОИМОСТИ
-
-📦 Материал: {material_name}
-📦 Количество: {quantity} {bag_text} (по 40-45кг)
-
-💰 Стоимость материала: {material_price} руб/мешок × {quantity} = {material_price * quantity:,.0f} руб
-🚚 Доставка: {delivery_text}
-
-━━━━━━━━━━━━━━━━━━━━
-💰 ИТОГО: {total:,.0f} руб
-
-📞 Для заказа звоните: 575677"""
+    delivery_text = "БЕСПЛАТНО" if delivery_price == 0 else f"{delivery_price:,.0f} ₽"
+    return f"""<div class="material-name">📦 {material_name}</div>
+<div class="price-amount">{material_price} ₽ / мешок</div>
+<div class="section-title"><span class="section-icon">📦</span> Количество</div>
+<div>• {quantity} {bag_text} (по 40-45кг)</div>
+<div class="section-title"><span class="section-icon">💰</span> Стоимость материала</div>
+<div>• {material_price} ₽ × {quantity} = <strong>{material_price * quantity:,.0f} ₽</strong></div>
+<div class="section-title"><span class="section-icon">🚚</span> Доставка</div>
+<div>• {delivery_text}</div>
+<div class="separator-line"></div>
+<div class="total-cost">💰 ИТОГО: {total:,.0f} ₽</div>
+<div class="delivery-cost">📞 Для заказа звоните: 575677</div>"""
 
 def get_intent_ml(text):
     if pipeline is None:
@@ -195,6 +193,13 @@ def extract_material_from_price_query(text):
 
     return None
 
+def get_districts_list_html():
+    return """<div class="district-item"><span class="section-icon">🏘️</span> <span class="district-name">Советский район</span> — Вагжанова, Исток</div>
+<div class="district-item"><span class="section-icon">🚂</span> <span class="district-name">Железнодорожный район</span> — Аршан, Верхняя Берёзовка</div>
+<div class="district-item"><span class="section-icon">🏭</span> <span class="district-name">Октябрьский район</span> — Комушка, Забайкальский</div>
+<div class="district-item"><span class="section-icon">🌲</span> <span class="district-name">Отдалённые микрорайоны</span> — Сосновый бор, Тальцы</div>
+<div class="example-query">💡 Например: "в Комушку" или "в Октябрьский район"</div>"""
+
 def get_response(intent, text, user_id):
     if user_id not in user_sessions:
         user_sessions[user_id] = {}
@@ -223,7 +228,10 @@ def get_response(intent, text, user_id):
         material_name = get_material_name(session["pending_material"])
         value = quantity_data["value"]
         unit = "мешков" if quantity_data["unit"] == "bag" else ("тонна" if value == 1 else "тонны")
-        return f"📦 {material_name}, {value} {unit}\n\n📍 Укажите район доставки:\n\n{get_districts_list()}"
+        return f"""<div class="material-name">📦 {material_name}</div>
+<div class="price-amount">{value} {unit}</div>
+<div class="section-title"><span class="section-icon">📍</span> Укажите район доставки</div>
+{get_districts_list_html()}"""
     
     if session.get("awaiting_district") and zone_key:
         material = session.get("pending_material")
@@ -245,28 +253,38 @@ def get_response(intent, text, user_id):
         material_price, price_unit = get_material_price(material)
         material_name = get_material_name(material)
         if price_unit == "bag":
-            return f"💰 {material_name}\n\n💰 Цена: {material_price} руб/мешок (40-45кг)\n🎁 Бесплатная доставка по Октябрьскому району\n\n❓ Укажите количество мешков"
+            return f"""<div class="material-name">💰 {material_name}</div>
+<div class="price-amount">{material_price} ₽ / мешок (40-45кг)</div>
+<div class="delivery-cost">🎁 Бесплатная доставка по Октябрьскому району</div>
+<div class="section-title"><span class="section-icon">❓</span> Укажите количество мешков</div>
+<div class="example-query">Примеры: 10, 5, 20</div>"""
         else:
-            return f"💰 {material_name}\n\n💰 Цена: {material_price} руб/тонна\n\n❓ Укажите количество тонн (от 1 до 4)\n\nПримеры: 2, 3, 4"
+            return f"""<div class="material-name">💰 {material_name}</div>
+<div class="price-amount">{material_price:,.0f} ₽ / тонна</div>
+<div class="section-title"><span class="section-icon">❓</span> Укажите количество тонн (от 1 до 4)</div>
+<div class="example-query">Примеры: 2, 3, 4</div>"""
     
     if quantity_data and not material:
-        return "❓ Укажите материал\n\n• щебень\n• песок\n• гравий\n• крошка\n• отсев\n• доломит"
+        return """<div class="material-name">❓ Укажите материал</div>
+<div class="price-amount">Доступные материалы:</div>
+<div class="district-item">• 🪨 щебень</div>
+<div class="district-item">• 🏖️ песок</div>
+<div class="district-item">• ⚫ гравий</div>
+<div class="district-item">• 🪨 крошка</div>
+<div class="district-item">• 🔘 отсев</div>
+<div class="district-item">• 💎 доломит</div>"""
     
     if intent == "greeting":
         materials = get_all_materials()
         ton_materials = [info['name'] for m, info in materials.items() if info['type'] == 'ton']
         bag_materials = [info['name'] for m, info in materials.items() if info['type'] == 'bag']
-        return f"""👋 Здравствуйте! Я Неруд Консультант
-
-🚚 Доставка нерудных материалов по Улан-Удэ
-
-📦 Что у нас есть:
-• 🪨 Сыпучие: {', '.join(ton_materials[:5])}
-• 💎 В мешках: {', '.join(bag_materials)}
-
-🎁 Доломит: БЕСПЛАТНАЯ доставка по Октябрьскому району!
-
-💬 Просто напишите, например: "4 тонны щебня" или "10 мешков доломита" """
+        return f"""<div class="material-name">👋 Здравствуйте! Я Неруд Консультант</div>
+<div class="price-amount">🚚 Доставка по Улан-Удэ</div>
+<div class="section-title"><span class="section-icon">📦</span> Что у нас есть</div>
+<div class="district-item">🪨 Сыпучие: {', '.join(ton_materials[:5])}</div>
+<div class="district-item">💎 В мешках: {', '.join(bag_materials)}</div>
+<div class="delivery-cost">🎁 Доломит: БЕСПЛАТНАЯ доставка по Октябрьскому району!</div>
+<div class="example-query">💬 Например: "4 тонны щебня" или "10 мешков доломита"</div>"""
     
     if not material and not quantity_data:
         materials = get_all_materials()
@@ -288,30 +306,25 @@ def get_response(intent, text, user_id):
         
         if ton_items:
             result += '🪨 <strong>Сыпучие материалы (за тонну)</strong><br>'
-            result += '━━━━━━━━━━━━━━━━━━━━<br>'
+            result += '<div class="separator-line"></div>'
             result += ''.join(ton_items) + '<br>'
         
         if bag_items:
             result += '💎 <strong>В мешках</strong><br>'
-            result += '━━━━━━━━━━━━━━━━━━━━<br>'
+            result += '<div class="separator-line"></div>'
             result += ''.join(bag_items) + '<br>'
         
-        result += '<strong>💡 Напишите:</strong><br>'
-        result += '"цена щебня" или "2 тонны песка"<br>'
-        result += '🚛 <strong>Рассчитаю с доставкой</strong>'
+        result += '<div class="example-query">💡 Напишите: "цена щебня" или "2 тонны песка"</div>'
+        result += '<div class="delivery-cost">🚛 Рассчитаю с доставкой</div>'
         result += '</div>'
         
         return result
         
     elif intent == "delivery":
-        zones = get_districts_list()
-        return f"""🚚 Доставка по Улан-Удэ
-
-🚛 Грузоподъёмность: 2 и 4 тонны (максимум 4 тонны за рейс)
-
-{zones}
-
-💡 Напишите: "4 тонны щебня в Комушку" или "10 мешков доломита" """
+        return f"""<div class="material-name">🚚 Доставка по Улан-Удэ</div>
+<div class="price-amount">🚛 Грузоподъёмность: 2 и 4 тонны (максимум 4 тонны за рейс)</div>
+{get_districts_list_html()}
+<div class="example-query">💡 Напишите: "4 тонны щебня в Комушку" или "10 мешков доломита"</div>"""
     
     elif intent == "availability":
         material = find_material(text)
@@ -319,63 +332,35 @@ def get_response(intent, text, user_id):
             material_price, price_unit = get_material_price(material)
             material_name = get_material_name(material)
             if price_unit == "bag":
-                return f"""📦 {material_name}
-
-✅ Есть в наличии!
-💰 Цена: {material_price} руб/мешок (40-45кг)
-🎁 Бесплатная доставка по Октябрьскому району
-
-❓ Укажите количество мешков и район доставки"""
+                return f"""<div class="material-name">📦 {material_name}</div>
+<div class="price-amount">✅ Есть в наличии!</div>
+<div class="price-value">{material_price} ₽ / мешок (40-45кг)</div>
+<div class="delivery-cost">🎁 Бесплатная доставка по Октябрьскому району</div>
+<div class="section-title"><span class="section-icon">❓</span> Укажите количество мешков и район доставки</div>"""
             else:
-                return f"""📦 {material_name}
-
-✅ Есть в наличии!
-💰 Цена: {material_price} руб/тонна
-🚛 Максимум: 4 тонны за рейс
-
-❓ Укажите количество (1-4 тонны) и район доставки"""
+                return f"""<div class="material-name">📦 {material_name}</div>
+<div class="price-amount">✅ Есть в наличии!</div>
+<div class="price-value">{material_price:,.0f} ₽ / тонна</div>
+<div class="delivery-cost">🚛 Максимум: 4 тонны за рейс</div>
+<div class="section-title"><span class="section-icon">❓</span> Укажите количество (1-4 тонны) и район доставки</div>"""
         materials = get_all_materials()
         bag_materials = [info['name'] for m, info in materials.items() if info['type'] == 'bag']
         ton_materials = [info['name'] for m, info in materials.items() if info['type'] == 'ton']
-        return f"""📦 Все материалы в наличии!
-
-✅ Сыпучие (тонны): {', '.join(ton_materials[:5])}
-✅ Мешковые: {', '.join(bag_materials)}
-
-❓ Какой материал вас интересует?"""
+        return f"""<div class="material-name">📦 Все материалы в наличии!</div>
+<div class="price-amount">✅ Сыпучие (тонны): {', '.join(ton_materials[:5])}</div>
+<div class="price-amount">✅ Мешковые: {', '.join(bag_materials)}</div>
+<div class="section-title"><span class="section-icon">❓</span> Какой материал вас интересует?</div>"""
     
     elif intent == "contact":
-        return f"""📞 Наши контакты
-
-📱 Телефон: 575677
-
-📍 Улан-Удэ
-🚛 Доставка от 1 до 4 тонн (сыпучие) или мешками
-
-✨ Звоните, договоримся!"""
+        return f"""<div class="material-name">📞 Наши контакты</div>
+<div class="price-amount">📱 Телефон: 575677</div>
+<div class="district-item">📍 Улан-Удэ</div>
+<div class="district-item">🚛 Доставка от 1 до 4 тонн (сыпучие) или мешками</div>
+<div class="delivery-cost">✨ Звоните, договоримся!</div>"""
     
-    elif intent == "greeting":
-        materials = get_all_materials()
-        ton_materials = [info['name'] for m, info in materials.items() if info['type'] == 'ton']
-        bag_materials = [info['name'] for m, info in materials.items() if info['type'] == 'bag']
-        return f"""👋 Здравствуйте! Я Неруд Консультант
-
-🚚 Доставка нерудных материалов по Улан-Удэ
-
-📦 Что у нас есть:
-• 🪨 Сыпучие: {', '.join(ton_materials[:5])}
-• 💎 В мешках: {', '.join(bag_materials)}
-
-🎁 Доломит и мраморный щебень: БЕСПЛАТНАЯ доставка по Октябрьскому району!
-
-💬 Просто напишите, например: "4 тонны щебня" или "10 мешков доломита"
-
-Я сам спрошу район и рассчитаю стоимость!"""
-    
-    return f"""❌ Извините, я не совсем понял.
-
-📞 Позвоните: 575677
-💬 Или напишите: "4 тонны щебня в Комушку" или "10 мешков доломита" """
+    return f"""<div class="material-name">❌ Извините, я не совсем понял</div>
+<div class="price-amount">📞 Позвоните: 575677</div>
+<div class="example-query">💬 Или напишите: "4 тонны щебня в Комушку" или "10 мешков доломита"</div>"""
 
 @app.get("/")
 async def root():

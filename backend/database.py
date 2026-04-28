@@ -21,6 +21,14 @@ class Material(Base):
     description = Column(Text)
     type = Column(String(20), default="ton")
 
+class FreeDolomiteMicrodistrict(Base):
+    __tablename__ = "free_dolomite_microdistricts"
+    
+    id = Column(Integer, primary_key=True, index=True)
+    name = Column(String(200), nullable=False)
+    slang_name = Column(String(200))
+    created_at = Column(DateTime, default=datetime.utcnow)
+
 class DeliveryZone(Base):
     __tablename__ = "delivery_zones"
     

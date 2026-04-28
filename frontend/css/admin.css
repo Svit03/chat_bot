@@ -520,6 +520,98 @@ td input:focus {
     border-radius: 12px;
 }
 
+td input[type="checkbox"] {
+    width: 20px;
+    height: 20px;
+    cursor: pointer;
+    margin: 0 auto;
+    display: block;
+}
+
+.free-delivery-section {
+    margin-top: 30px;
+    padding-top: 20px;
+    border-top: 2px solid var(--border-light);
+}
+
+.free-delivery-section h3 {
+    color: #2d5a3b;
+    margin-bottom: 8px;
+    font-size: 18px;
+}
+
+.free-delivery-form {
+    margin-top: 20px;
+    padding: 20px;
+    background: #f8f9fa;
+    border-radius: 12px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 16px;
+    align-items: flex-end;
+}
+
+.free-micro-input-group {
+    flex: 1;
+    min-width: 200px;
+}
+
+.free-micro-input-group label {
+    display: block;
+    font-size: 12px;
+    font-weight: 500;
+    color: #333;
+    margin-bottom: 6px;
+}
+
+.free-micro-input {
+    width: 100%;
+    padding: 10px 12px;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    font-size: 14px;
+    transition: all 0.3s;
+}
+
+.free-micro-input:focus {
+    outline: none;
+    border-color: #2d5a3b;
+    box-shadow: 0 0 0 2px rgba(45, 90, 59, 0.1);
+}
+
+.free-micro-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.free-micro-table th {
+    background: #f8f9fa;
+    padding: 12px;
+    text-align: left;
+    font-weight: 600;
+    border-bottom: 2px solid #dee2e6;
+}
+
+.free-micro-table td {
+    padding: 10px 12px;
+    border-bottom: 1px solid #eee;
+}
+
+.free-micro-table tr:hover {
+    background: #f8f9fa;
+}
+
+@media (max-width: 600px) {
+    .free-delivery-form {
+        flex-direction: column;
+        align-items: stretch;
+    }
+    
+    .free-micro-input-group {
+        width: 100%;
+    }
+}
+
 @media (max-width: 768px) {
     .delivery-types {
         grid-template-columns: 1fr;

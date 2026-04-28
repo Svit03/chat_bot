@@ -218,9 +218,10 @@ def get_response(intent, text, user_id):
     if quantity_data and quantity_data not in ["max_exceeded", "invalid_unit"]:
         session["pending_quantity"] = quantity_data
     
-    zone_key, zone_name = detect_delivery_zone(text)
+    zone_key, zone_info = detect_delivery_zone(text)
     if zone_key:
         session["pending_zone"] = zone_key
+        session["pending_zone_info"] = zone_info
     
     if session.get("awaiting_quantity") and quantity_data:
         session["awaiting_quantity"] = False
@@ -240,7 +241,10 @@ def get_response(intent, text, user_id):
             material_price, price_unit = get_material_price(material)
             quantity = quantity_data["value"]
             material_name = get_material_name(material)
-            delivery_price = calculate_delivery_price(zone_key, "сотые_кварталы", material)
+            
+            microdistrict_name = zone_info.get("microdistrict_name") if zone_info else None
+            
+            delivery_price = calculate_delivery_price(zone_key, "сотые_кварталы", material, microdistrict_name)
             total = (material_price * quantity) + delivery_price
             session.clear()
             if price_unit == "bag":
@@ -286,7 +290,7 @@ def get_response(intent, text, user_id):
 <div class="delivery-cost">🎁 Доломит: БЕСПЛАТНАЯ доставка по Октябрьскому району!</div>
 <div class="example-query">💬 Например: "4 тонны щебня" или "10 мешков доломита"</div>"""
     
-    if not material and not quantity_data:
+    if not material and not quantity_data and intent != "greeting":
         materials = get_all_materials()
         ton_items = []
         bag_items = []

@@ -1,4 +1,4 @@
-from database import SessionLocal, DeliveryZone, Microdistrict
+from database import SessionLocal, DeliveryZone, Microdistrict, FreeDolomiteMicrodistrict
 
 def get_all_zones():
     db = SessionLocal()
@@ -27,12 +27,20 @@ def detect_delivery_zone(text):
             microdistricts = db.query(Microdistrict).filter(Microdistrict.zone_id == zone.id).all()
             for md in microdistricts:
                 if md.name.lower() in text_lower or (md.slang_name and md.slang_name.lower() in text_lower):
-                    return zone.key_name, {"name": zone.name, "base_price": zone.base_price}
-        return "октябрьский", {"name": "Октябрьский район", "base_price": 3500}
+                    return zone.key_name, {
+                        "name": zone.name, 
+                        "base_price": zone.base_price,
+                        "microdistrict_name": md.name
+                    }
+        return "октябрьский", {
+            "name": "Октябрьский район", 
+            "base_price": 3500,
+            "microdistrict_name": None
+        }
     finally:
         db.close()
 
-def calculate_delivery_price(zone_key, loading_point_key, material_key=None):
+def calculate_delivery_price(zone_key, loading_point_key, material_key=None, microdistrict_name=None):
     db = SessionLocal()
     try:
         zone = db.query(DeliveryZone).filter(DeliveryZone.key_name == zone_key).first()
@@ -40,10 +48,16 @@ def calculate_delivery_price(zone_key, loading_point_key, material_key=None):
             return 3500
         
         if material_key in ["доломит", "мраморный_щебень"]:
-            if zone_key == "октябрьский":
-                return 0
+            if microdistrict_name:
+                free_micro = db.query(FreeDolomiteMicrodistrict).filter(
+                    (FreeDolomiteMicrodistrict.name.ilike(f"%{microdistrict_name}%")) |
+                    (FreeDolomiteMicrodistrict.slang_name.ilike(f"%{microdistrict_name}%"))
+                ).first()
+                
+                if free_micro:
+                    return 0
+            
             return zone.bag_price if zone.bag_price else 700
-        
         return zone.base_price
     finally:
         db.close()

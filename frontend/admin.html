@@ -75,6 +75,28 @@
                     </div>
                     <button class="btn btn-add" onclick="createZone()">➕ Создать зону</button>
                 </div>
+
+                <div class="free-delivery-section">
+                    <h3>🎁 Бесплатная доставка доломита</h3>                    
+                    <div class="table-container">
+                        <h4 style="margin-bottom: 10px;">🗺️ Микрорайоны с бесплатной доставкой доломита</h4>
+                        <div id="freeMicroTable">
+                            <div class="loading">Загрузка...</div>
+                        </div>
+                    </div>
+                    
+                    <div class="free-delivery-form">
+                        <div class="free-micro-input-group">
+                            <label>Название микрорайона</label>
+                            <input type="text" id="freeMicroName" placeholder="например: комушка" class="free-micro-input">
+                        </div>
+                        <div class="free-micro-input-group">
+                            <label>Народное название (необязательно)</label>
+                            <input type="text" id="freeMicroSlang" placeholder="например: комушка" class="free-micro-input">
+                        </div>
+                        <button class="btn btn-add" onclick="addFreeMicrodistrict()">➕ Добавить микрорайон</button>
+                    </div>
+                </div>
             </div>
         </div>
     </div>

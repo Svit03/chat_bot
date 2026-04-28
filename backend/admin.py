@@ -2,8 +2,7 @@ from fastapi import APIRouter, HTTPException, Depends, status
 from fastapi.security import HTTPBasic, HTTPBasicCredentials
 from pydantic import BaseModel
 from typing import Optional
-from database import SessionLocal, Material, DeliveryZone
-from database import SessionLocal, Material, DeliveryZone, Setting
+from database import SessionLocal, Material, DeliveryZone, Setting, FreeDolomiteMicrodistrict, Microdistrict
 import secrets
 
 router = APIRouter(prefix="/admin", tags=["Admin Panel"])
@@ -23,9 +22,6 @@ def verify_admin(credentials: HTTPBasicCredentials = Depends(security)):
             headers={"WWW-Authenticate": "Basic"},
         )
     return credentials.username
-
-class BagDeliveryUpdate(BaseModel):
-    price_other_districts: int
 
 class MaterialUpdate(BaseModel):
     price_per_ton: Optional[float] = None
@@ -49,8 +45,18 @@ class ZoneCreate(BaseModel):
     key_name: str
     name: str
     base_price: int
+    bag_price: int = 700
     coefficient: float = 1.0
     note: Optional[str] = None
+
+class FreeMicrodistrictCreate(BaseModel):
+    name: str
+    slang_name: Optional[str] = None
+
+class MicrodistrictCreate(BaseModel):
+    zone_id: int
+    name: str
+    slang_name: Optional[str] = None
 
 @router.get("/materials")
 async def get_materials(admin: str = Depends(verify_admin)):
@@ -186,7 +192,55 @@ async def delete_zone(zone_id: int, admin: str = Depends(verify_admin)):
     finally:
         db.close()
 
-from database import Microdistrict
+@router.get("/free-dolomite-microdistricts")
+async def get_free_dolomite_microdistricts(admin: str = Depends(verify_admin)):
+    db = SessionLocal()
+    try:
+        microdistricts = db.query(FreeDolomiteMicrodistrict).all()
+        return [
+            {
+                "id": md.id,
+                "name": md.name,
+                "slang_name": md.slang_name
+            }
+            for md in microdistricts
+        ]
+    finally:
+        db.close()
+
+@router.post("/free-dolomite-microdistricts")
+async def create_free_dolomite_microdistrict(data: FreeMicrodistrictCreate, admin: str = Depends(verify_admin)):
+    db = SessionLocal()
+    try:
+        existing = db.query(FreeDolomiteMicrodistrict).filter(
+            FreeDolomiteMicrodistrict.name == data.name
+        ).first()
+        if existing:
+            raise HTTPException(status_code=400, detail="Микрорайон уже существует")
+        
+        md = FreeDolomiteMicrodistrict(
+            name=data.name,
+            slang_name=data.slang_name
+        )
+        db.add(md)
+        db.commit()
+        return {"message": "Микрорайон добавлен", "id": md.id}
+    finally:
+        db.close()
+
+@router.delete("/free-dolomite-microdistricts/{microdistrict_id}")
+async def delete_free_dolomite_microdistrict(microdistrict_id: int, admin: str = Depends(verify_admin)):
+    db = SessionLocal()
+    try:
+        md = db.query(FreeDolomiteMicrodistrict).filter(FreeDolomiteMicrodistrict.id == microdistrict_id).first()
+        if not md:
+            raise HTTPException(status_code=404, detail="Микрорайон не найден")
+        
+        db.delete(md)
+        db.commit()
+        return {"message": "Микрорайон удалён"}
+    finally:
+        db.close()
 
 @router.get("/microdistricts/{zone_id}")
 async def get_microdistricts(zone_id: int, admin: str = Depends(verify_admin)):
@@ -204,11 +258,6 @@ async def get_microdistricts(zone_id: int, admin: str = Depends(verify_admin)):
         ]
     finally:
         db.close()
-
-class MicrodistrictCreate(BaseModel):
-    zone_id: int
-    name: str
-    slang_name: Optional[str] = None
 
 @router.post("/microdistricts")
 async def create_microdistrict(data: MicrodistrictCreate, admin: str = Depends(verify_admin)):

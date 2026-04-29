@@ -40,46 +40,12 @@ class DeliveryZone(Base):
     coefficient = Column(Float, default=1.0)
     note = Column(Text)
 
-class Setting(Base):
-    __tablename__ = "settings"
-    
-    id = Column(Integer, primary_key=True)
-    key = Column(String(100), unique=True, nullable=False)
-    value = Column(String(500), nullable=False)
-
 class Microdistrict(Base):
     __tablename__ = "microdistricts"
     id = Column(Integer, primary_key=True)
     zone_id = Column(Integer, ForeignKey("delivery_zones.id"))
     name = Column(String(200))
     slang_name = Column(String(200))
-
-class Conversation(Base):
-    __tablename__ = "conversations"
-    id = Column(Integer, primary_key=True)
-    user_id = Column(String(100))
-    user_message = Column(Text)
-    bot_response = Column(Text)
-    detected_intent = Column(String(50))
-    confidence = Column(Float)
-    user_feedback = Column(String(10))
-    created_at = Column(DateTime, default=datetime.utcnow)
-
-class TrainingExample(Base):
-    __tablename__ = "training_examples"
-    id = Column(Integer, primary_key=True)
-    text = Column(Text)
-    intent = Column(String(50))
-    source = Column(String(50), default="manual")
-    approved = Column(Boolean, default=False)
-    created_at = Column(DateTime, default=datetime.utcnow)
-
-def get_db():
-    db = SessionLocal()
-    try:
-        yield db
-    finally:
-        db.close()
 
 def init_db():
     Base.metadata.create_all(bind=engine)

@@ -2,7 +2,7 @@ from fastapi import APIRouter, HTTPException, Depends, status
 from fastapi.security import HTTPBasic, HTTPBasicCredentials
 from pydantic import BaseModel
 from typing import Optional
-from database import SessionLocal, Material, DeliveryZone, Setting, FreeDolomiteMicrodistrict, Microdistrict
+from database import SessionLocal, Material, DeliveryZone, FreeDolomiteMicrodistrict, Microdistrict
 import secrets
 
 router = APIRouter(prefix="/admin", tags=["Admin Panel"])

@@ -41,7 +41,7 @@ def detect_delivery_zone(text):
     finally:
         db.close()
 
-def calculate_delivery_price(zone_key, loading_point_key, material_key=None, microdistrict_name=None):
+def calculate_delivery_price(zone_key, material_key=None, microdistrict_name=None):
     db = SessionLocal()
     try:
         zone = db.query(DeliveryZone).filter(DeliveryZone.key_name == zone_key).first()

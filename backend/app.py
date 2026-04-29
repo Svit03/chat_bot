@@ -320,7 +320,7 @@ def get_response(intent, text, user_id):
                 
                 microdistrict_name = zone_info.get("microdistrict_name") if zone_info else None
                 
-                delivery_price = calculate_delivery_price(zone_key, "сотые_кварталы", material, microdistrict_name)
+                delivery_price = calculate_delivery_price(zone_key, material, microdistrict_name)
                 total = (material_price * quantity) + delivery_price
                 session.clear()
                 if price_unit == "bag":
@@ -345,7 +345,7 @@ def get_response(intent, text, user_id):
         
         microdistrict_name = zone_info.get("microdistrict_name") if zone_info else None
         
-        delivery_price = calculate_delivery_price(zone_key, "сотые_кварталы", material, microdistrict_name)
+        delivery_price = calculate_delivery_price(zone_key, material, microdistrict_name)
         total = (material_price * quantity) + delivery_price
         session.clear()
         if price_unit == "bag":

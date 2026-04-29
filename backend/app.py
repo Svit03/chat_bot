@@ -211,6 +211,17 @@ def get_districts_list_html():
 def get_free_delivery_note():
     return """<div class="delivery-cost">🎁 В некоторые микрорайоны доставка доломита БЕСПЛАТНО!</div>"""
 
+def get_greeting_message():
+    return f"""<div class="material-name">👋 Здравствуйте! Я Неруд Консультант</div>
+<div class="price-amount">🚚 Доставка по Улан-Удэ</div>
+<div class="section-title"><span class="section-icon">📦</span> Что у нас есть</div>
+<div class="district-item">• 🪨 Щебень (5-20, 20-40, 40-70)</div>
+<div class="district-item">• 💎 Доломит, мраморный щебень в мешках</div>
+<div class="district-item">• 🏖️ Песок, ПГС</div>
+<div class="district-item">• ⚫ Гравий, галька, крошка, отсев, уголь</div>
+<div class="delivery-cost">📞 Контакты: 575677</div>
+<div class="example-query">💬 Что вас интересует?</div>"""
+
 def get_response(intent, text, user_id):
     if user_id not in user_sessions:
         user_sessions[user_id] = {}
@@ -334,18 +345,16 @@ def get_response(intent, text, user_id):
 <div class="example-query">💡 Например: "2 тонны гравия"</div>"""
     
     if intent == "greeting":
-        materials = get_all_materials()
-        ton_materials = [info['name'] for m, info in materials.items() if info['type'] == 'ton']
-        bag_materials = [info['name'] for m, info in materials.items() if info['type'] == 'bag']
-        return f"""<div class="material-name">👋 Здравствуйте! Я Неруд Консультант</div>
-<div class="price-amount">🚚 Доставка по Улан-Удэ</div>
-<div class="section-title"><span class="section-icon">📦</span> Что у нас есть</div>
-<div class="district-item">🪨 Сыпучие: {', '.join(ton_materials[:5])}</div>
-<div class="district-item">💎 В мешках: {', '.join(bag_materials)}</div>
-{get_free_delivery_note()}
-<div class="example-query">💬 Например: "4 тонны щебня" или "10 мешков доломита"</div>"""
+        return get_greeting_message()
     
-    if not material and not quantity_data and intent != "greeting":
+    if intent == "contact":
+        return f"""<div class="material-name">📞 Наши контакты</div>
+<div class="price-amount">📱 Телефон: 575677</div>
+<div class="district-item">📍 Улан-Удэ</div>
+<div class="district-item">🚛 Доставка от 1 до 4 тонн (сыпучие) или мешками</div>
+<div class="delivery-cost">✨ Звоните, договоримся!</div>"""
+    
+    if not material and not quantity_data and intent != "greeting" and intent != "contact":
         materials = get_all_materials()
         ton_items = []
         bag_items = []
@@ -412,13 +421,6 @@ def get_response(intent, text, user_id):
 <div class="price-amount">✅ Мешковые: {', '.join(bag_materials)}</div>
 <div class="section-title"><span class="section-icon">❓</span> Какой материал вас интересует?</div>
 <div class="example-query">💡 Например: "гравий есть?"</div>"""
-    
-    elif intent == "contact":
-        return f"""<div class="material-name">📞 Наши контакты</div>
-<div class="price-amount">📱 Телефон: 575677</div>
-<div class="district-item">📍 Улан-Удэ</div>
-<div class="district-item">🚛 Доставка от 1 до 4 тонн (сыпучие) или мешками</div>
-<div class="delivery-cost">✨ Звоните, договоримся!</div>"""
     
     return f"""<div class="material-name">❌ Извините, я не совсем понял</div>
 <div class="price-amount">📞 Позвоните: 575677</div>

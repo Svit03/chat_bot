@@ -4,6 +4,7 @@ from pydantic import BaseModel
 import joblib
 import os
 import re
+from difflib import get_close_matches
 from materials import find_material, get_material_price, get_material_name, get_all_materials
 from delivery_zones import detect_delivery_zone, calculate_delivery_price, get_districts_list
 from admin import router as admin_router
@@ -42,6 +43,60 @@ class BotResponse(BaseModel):
     intent: str
     confidence: float
 
+def normalize_text(text):
+    text_lower = text.lower().strip()
+    corrections = {
+        "гравий": ["грави", "гравей", "гравии", "грвий"],
+        "щебень": ["щебен", "щебнь", "щебенъ", "щеб", "шебень", "шебен"],
+        "песок": ["писок", "писак", "песак", "песокк"],
+        "доломит": ["даломит", "доломитт", "доломид", "доломи"],
+        "отсев": ["отсевв", "отсеф", "отсевк"],
+        "крошка": ["крошк", "крошкаа", "крошечка"],
+        "уголь": ["угол", "угль", "угал"],
+        "гранит": ["гранитт", "гранид"],
+        "пыль": ["пыл", "пыльь"],
+        "пгс": ["пгц", "пкс"],
+    }
+    
+    for correct, wrong_list in corrections.items():
+        for wrong in wrong_list:
+            if wrong in text_lower:
+                text_lower = text_lower.replace(wrong, correct)
+    
+    common_typos = {
+        "сколько": ["сколька", "скольки", "скольео", "скелько"],
+        "цена": ["ценаа", "цина", "цына"],
+        "стоит": ["стоет", "стоить", "стои"],
+        "доставка": ["даставка", "доставк", "дастафка"],
+        "телефон": ["телефан", "тэлефон", "телефонн"],
+        "район": ["райан", "раен", "раён"],
+    }
+    
+    for correct, wrong_list in common_typos.items():
+        for wrong in wrong_list:
+            if wrong in text_lower:
+                text_lower = text_lower.replace(wrong, correct)
+    
+    return text_lower
+
+def fuzzy_match_material(query, threshold=0.7):
+    materials = get_all_materials()
+    all_names = []
+    name_to_key = {}
+    
+    for key, info in materials.items():
+        all_names.append(info['name'].lower())
+        name_to_key[info['name'].lower()] = key
+        all_names.append(key.lower())
+        name_to_key[key.lower()] = key
+    
+    matches = get_close_matches(query.lower(), all_names, n=1, cutoff=threshold)
+    
+    if matches:
+        return name_to_key[matches[0]]
+    
+    return None
+
 def get_bag_text(quantity):
     if quantity == 1:
         return "мешок"
@@ -59,7 +114,7 @@ def get_ton_text(quantity):
         return "тонн"
 
 def extract_quantity(text, material_key=None):
-    text_lower = text.lower().strip()
+    text_lower = normalize_text(text).strip()
     
     number_words = {
         "одна": 1, "один": 1, "одну": 1, "одного": 1,
@@ -169,7 +224,7 @@ def get_intent_ml(text):
     if pipeline is None:
         return "unknown", 0.5
     
-    text_lower = text.lower()
+    text_lower = normalize_text(text)
     pred_id = pipeline.predict([text_lower])[0]
     proba = pipeline.predict_proba([text_lower])[0]
     confidence = max(proba)
@@ -177,7 +232,7 @@ def get_intent_ml(text):
     return intent, confidence
 
 def extract_material_from_price_query(text):
-    text_lower = text.lower()
+    text_lower = normalize_text(text)
     
     price_words = ["цена", "почём", "сколько", "стоит", "стоимость", "руб"]
     if not any(word in text_lower for word in price_words):
@@ -223,14 +278,15 @@ def get_greeting_message():
 <div class="example-query">💬 Что вас интересует?</div>"""
 
 def get_response(intent, text, user_id):
+    text_normalized = normalize_text(text)
+    
     if user_id not in user_sessions:
         user_sessions[user_id] = {}
     
     session = user_sessions[user_id]
-    text_lower = text.lower().strip()
     
     if session.get("awaiting_quantity"):
-        quantity_data = extract_quantity(text, session.get("pending_material"))
+        quantity_data = extract_quantity(text_normalized, session.get("pending_material"))
         if quantity_data and quantity_data not in ["max_exceeded", "invalid_unit"]:
             session["pending_quantity"] = quantity_data
             session["awaiting_quantity"] = False
@@ -253,7 +309,7 @@ def get_response(intent, text, user_id):
 <div class="example-query">💬 Укажите количество от 1 до 4 тонн</div>"""
     
     if session.get("awaiting_district"):
-        zone_key, zone_info = detect_delivery_zone(text)
+        zone_key, zone_info = detect_delivery_zone(text_normalized)
         if zone_key:
             material = session.get("pending_material")
             quantity_data = session.get("pending_quantity")
@@ -272,13 +328,15 @@ def get_response(intent, text, user_id):
                 else:
                     return format_price_calculation_simple(material_name, quantity, material_price, delivery_price, total)
     
-    material = find_material(text)
+    material = find_material(text_normalized)
     if not material:
-        material = extract_material_from_price_query(text)
+        material = extract_material_from_price_query(text_normalized)
+    if not material:
+        material = fuzzy_match_material(text_normalized)
     
-    quantity_data = extract_quantity(text, material)
+    quantity_data = extract_quantity(text_normalized, material)
     
-    zone_key, zone_info = detect_delivery_zone(text)
+    zone_key, zone_info = detect_delivery_zone(text_normalized)
     
     if material and quantity_data and quantity_data not in ["max_exceeded", "invalid_unit"] and zone_key:
         material_price, price_unit = get_material_price(material)

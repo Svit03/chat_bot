@@ -48,10 +48,14 @@ def calculate_delivery_price(zone_key, material_key=None, microdistrict_name=Non
         if not zone:
             return 3500
         
-        if material_key in ["доломит", "мраморный_щебень"]:
+        from materials import get_all_materials
+        materials = get_all_materials()
+        is_bag_material = False
+        if material_key and material_key in materials:
+            is_bag_material = materials[material_key]['type'] == 'bag'
+        
+        if is_bag_material:
             if microdistrict_name:
-                print(f"🔍 Проверка бесплатной доставки для микрорайона: {microdistrict_name}")
-                
                 free_micro = db.query(FreeDolomiteMicrodistrict).filter(
                     (FreeDolomiteMicrodistrict.name.ilike(microdistrict_name)) |
                     (FreeDolomiteMicrodistrict.slang_name.ilike(microdistrict_name)) |
@@ -60,7 +64,7 @@ def calculate_delivery_price(zone_key, material_key=None, microdistrict_name=Non
                 ).first()
                 
                 if free_micro:
-                    print(f"✅ БЕСПЛАТНАЯ доставка! Найден микрорайон: {free_micro.name} (народное: {free_micro.slang_name})")
+                    print(f"✅ БЕСПЛАТНАЯ доставка для {material_key} в {microdistrict_name}")
                     return 0
                 else:
                     print(f"❌ Микрорайон {microdistrict_name} не найден в списке бесплатных")

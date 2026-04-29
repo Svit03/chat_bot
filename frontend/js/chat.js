@@ -106,9 +106,11 @@ function addMessage(text, sender) {
     
     const avatar = sender === 'bot' ? '🤖' : '👤';
     
+    const formattedText = text.replace(/\n/g, '<br>');
+    
     messageDiv.innerHTML = `
         <div class="message_avatar">${avatar}</div>
-        <div class="message_text">${text}</div>
+        <div class="message_text">${formattedText}</div>
     `;
     
     messagesDiv.appendChild(messageDiv);
@@ -166,11 +168,11 @@ function updateStatusIndicator(isOnline) {
     const statusText = document.getElementById('statusText');
     
     if (isOnline) {
-        statusDot.classList.remove('offline');
-        statusText.textContent = 'Онлайн';
+        if (statusDot) statusDot.classList.remove('offline');
+        if (statusText) statusText.textContent = 'Онлайн';
     } else {
-        statusDot.classList.add('offline');
-        statusText.textContent = 'Офлайн (запусти сервер)';
+        if (statusDot) statusDot.classList.add('offline');
+        if (statusText) statusText.textContent = 'Офлайн (запусти сервер)';
     }
 }
 

@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <title>Админ-панель | Неруд Консультант</title>
+    <link rel="stylesheet" href="css/admin.css">
+</head>
+<body>
+    <div id="authForm" class="auth-form">
+        <h2>🚛 Админ-панель</h2>
+        <input type="text" id="username" placeholder="Логин" value="admin">
+        <input type="password" id="password" placeholder="Пароль" value="admin123">
+        <button onclick="login()">Войти</button>
+    </div>
+
+    <div id="adminPanel" style="display: none;">
+        <div class="container">
+            <div class="header">
+                <h1>🚛 Неруд Консультант</h1>
+                <p>Управление ценами и материалами</p>
+            </div>
+            
+            <div id="status" class="status"></div>
+            
+            <div class="tabs">
+                <button class="tab-btn active" onclick="showTab('materials')">
+                    📦 Материалы
+                </button>
+                <button class="tab-btn" onclick="showTab('zones')">
+                    🚚 Зоны доставки
+                </button>
+            </div>
+            
+            <div id="materialsTab" class="tab-content active">
+                <div class="table-container">
+                    <div id="materialsTable">
+                        <div class="loading">Загрузка...</div>
+                    </div>
+                </div>
+                
+                <div class="add-form">
+                    <h3>➕ Добавить материал</h3>
+                    <div class="form-grid">
+                        <input type="text" id="newKeyName" placeholder="Ключ (например: бутовый_камень)">
+                        <input type="text" id="newName" placeholder="Название материала">
+                        <input type="number" id="newPriceTon" placeholder="Цена за тонну (руб)" step="100">
+                        <input type="number" id="newPriceBag" placeholder="Цена за мешок (руб)" step="10">
+                        <input type="text" id="newUnit" placeholder="Ед. изм. (тонна/мешок)">
+                        <input type="text" id="newDesc" placeholder="Описание">
+                        <select id="newType">
+                            <option value="ton">Сыпучий (тонны)</option>
+                            <option value="bag">Мешковый</option>
+                        </select>
+                    </div>
+                    <button class="btn btn-add" onclick="createMaterial()">➕ Создать материал</button>
+                </div>
+            </div>
+            
+            <div id="zonesTab" class="tab-content">
+                <div class="table-container">
+                    <div id="zonesTable">
+                        <div class="loading">Загрузка...</div>
+                    </div>
+                </div>
+
+                <div class="add-form">
+                    <h3>➕ Добавить зону доставки</h3>
+                    <div class="form-grid">
+                        <input type="text" id="newZoneKey" placeholder="Ключ (например: новый_район)">
+                        <input type="text" id="newZoneName" placeholder="Название зоны">
+                        <input type="number" id="newZonePrice" placeholder="Цена доставки сыпучих (руб)" step="500">
+                        <input type="number" id="newZoneBagPrice" placeholder="Цена доставки мешков (руб)" step="100">
+                        <input type="text" id="newZoneNote" placeholder="Примечание">
+                    </div>
+                    <button class="btn btn-add" onclick="createZone()">➕ Создать зону</button>
+                </div>
+
+                <div class="free-delivery-section">
+                    <h3>🎁 Бесплатная доставка доломита</h3>                    
+                    <div class="table-container">
+                        <h4 style="margin-bottom: 10px;">🗺️ Микрорайоны с бесплатной доставкой доломита</h4>
+                        <div id="freeMicroTable">
+                            <div class="loading">Загрузка...</div>
+                        </div>
+                    </div>
+                    
+                    <div class="free-delivery-form">
+                        <div class="free-micro-input-group">
+                            <label>Название микрорайона</label>
+                            <input type="text" id="freeMicroName" placeholder="например: комушка" class="free-micro-input">
+                        </div>
+                        <div class="free-micro-input-group">
+                            <label>Народное название (необязательно)</label>
+                            <input type="text" id="freeMicroSlang" placeholder="например: комушка" class="free-micro-input">
+                        </div>
+                        <button class="btn btn-add" onclick="addFreeMicrodistrict()">➕ Добавить микрорайон</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="js/admin.js"></script>
+</body>
+</html>

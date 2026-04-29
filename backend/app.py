@@ -211,7 +211,7 @@ def format_price_calculation_simple(material_name, quantity, material_price, del
 <div>• {delivery_price:,.0f} ₽</div>
 <div class="separator-line"></div>
 <div class="total-cost">💰 ИТОГО: {total:,.0f} ₽</div>
-<div class="delivery-cost">📞 Для заказа звоните: 575677</div>"""
+<div class="delivery-cost">📞 Для заказа звоните: <a href="tel:575677" class="phone_link" style="text-decoration: none; color: inherit;">575677</a></div>"""
 
 def format_price_calculation_bag(material_name, quantity, material_price, delivery_price, total):
     bag_text = get_bag_text(quantity)
@@ -227,7 +227,7 @@ def format_price_calculation_bag(material_name, quantity, material_price, delive
 <div>• {delivery_text}</div>
 <div class="separator-line"></div>
 <div class="total-cost">💰 ИТОГО: {total:,.0f} ₽</div>
-<div class="delivery-cost">📞 Для заказа звоните: 575677</div>"""
+<div class="delivery-cost">📞 Для заказа звоните: <a href="tel:575677" class="phone_link" style="text-decoration: none; color: inherit;">575677</a></div>"""
 
 def get_intent_ml(text):
     if pipeline is None:
@@ -283,7 +283,7 @@ def get_greeting_message():
 <div class="district-item">• 💎 Доломит в мешках</div>
 <div class="district-item">• 🏖️ Песок, ПГС</div>
 <div class="district-item">• ⚫ Гравий, крошка, отсев, уголь</div>
-<div class="delivery-cost">📞 Контакты: 575677</div>
+<div class="delivery-cost">📞 Контакты: <a href="tel:575677" class="phone_link" style="text-decoration: none; color: inherit;">575677</a></div>
 <div class="example-query">💬 Что вас интересует?</div>"""
 
 def get_response(intent, text, user_id):
@@ -416,7 +416,7 @@ def get_response(intent, text, user_id):
     
     if intent == "contact":
         return f"""<div class="material-name">📞 Наши контакты</div>
-<div class="price-amount">📱 Телефон: 575677</div>
+<div class="price-amount">📱 <a href="tel:575677" class="phone_link" style="text-decoration: none; color: inherit;">575677</a></div>
 <div class="district-item">📍 Улан-Удэ</div>
 <div class="district-item">🚛 Доставка от 1 до 4 тонн (сыпучие) или мешками</div>
 <div class="delivery-cost">✨ Звоните, договоримся!</div>"""
@@ -490,7 +490,7 @@ def get_response(intent, text, user_id):
 <div class="example-query">💡 Например: "гравий есть?"</div>"""
     
     return f"""<div class="material-name">❌ Извините, я не совсем понял</div>
-<div class="price-amount">📞 Позвоните: 575677</div>
+<div class="price-amount">📞 Позвоните: <a href="tel:575677" class="phone_link" style="text-decoration: none; color: inherit;">575677</a></div>
 <div class="example-query">💬 Или напишите: "4 тонны щебня в Комушку" или "10 мешков доломита"</div>"""
 
 @app.get("/")

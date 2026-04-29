@@ -8,7 +8,6 @@ def get_all_materials():
             "name": m.name,
             "price_per_ton": m.price_per_ton,
             "price_per_bag": m.price_per_bag,
-            "bag_weight": m.bag_weight,
             "unit": m.unit,
             "description": m.description,
             "type": m.type

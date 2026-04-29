@@ -168,11 +168,11 @@ function updateStatusIndicator(isOnline) {
     const statusText = document.getElementById('statusText');
     
     if (isOnline) {
-        statusDot.classList.remove('offline');
-        statusText.textContent = 'Онлайн';
+        if (statusDot) statusDot.classList.remove('offline');
+        if (statusText) statusText.textContent = 'Онлайн';
     } else {
-        statusDot.classList.add('offline');
-        statusText.textContent = 'Офлайн (запусти сервер)';
+        if (statusDot) statusDot.classList.add('offline');
+        if (statusText) statusText.textContent = 'Офлайн (запусти сервер)';
     }
 }
 

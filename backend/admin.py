@@ -32,7 +32,6 @@ class MaterialCreate(BaseModel):
     name: str
     price_per_ton: Optional[float] = None
     price_per_bag: Optional[float] = None
-    bag_weight: Optional[int] = None
     unit: str
     description: str
     type: str
@@ -70,7 +69,6 @@ async def get_materials(admin: str = Depends(verify_admin)):
                 "name": m.name,
                 "price_per_ton": m.price_per_ton,
                 "price_per_bag": m.price_per_bag,
-                "bag_weight": m.bag_weight,
                 "unit": m.unit,
                 "description": m.description,
                 "type": m.type

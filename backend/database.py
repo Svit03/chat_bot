@@ -16,7 +16,6 @@ class Material(Base):
     name = Column(String(200))
     price_per_ton = Column(Float)
     price_per_bag = Column(Float)
-    bag_weight = Column(Integer)
     unit = Column(String(50))
     description = Column(Text)
     type = Column(String(20), default="ton")

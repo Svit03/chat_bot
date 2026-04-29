@@ -27,6 +27,7 @@ def detect_delivery_zone(text):
             microdistricts = db.query(Microdistrict).filter(Microdistrict.zone_id == zone.id).all()
             for md in microdistricts:
                 if md.name.lower() in text_lower or (md.slang_name and md.slang_name.lower() in text_lower):
+                    print(f"📍 Найдена зона: {zone.name}, микрорайон: {md.name}")
                     return zone.key_name, {
                         "name": zone.name, 
                         "base_price": zone.base_price,
@@ -49,16 +50,25 @@ def calculate_delivery_price(zone_key, loading_point_key, material_key=None, mic
         
         if material_key in ["доломит", "мраморный_щебень"]:
             if microdistrict_name:
+                print(f"🔍 Проверка бесплатной доставки для микрорайона: {microdistrict_name}")
+                
                 free_micro = db.query(FreeDolomiteMicrodistrict).filter(
+                    (FreeDolomiteMicrodistrict.name.ilike(microdistrict_name)) |
+                    (FreeDolomiteMicrodistrict.slang_name.ilike(microdistrict_name)) |
                     (FreeDolomiteMicrodistrict.name.ilike(f"%{microdistrict_name}%")) |
                     (FreeDolomiteMicrodistrict.slang_name.ilike(f"%{microdistrict_name}%"))
                 ).first()
                 
                 if free_micro:
+                    print(f"✅ БЕСПЛАТНАЯ доставка! Найден микрорайон: {free_micro.name} (народное: {free_micro.slang_name})")
                     return 0
+                else:
+                    print(f"❌ Микрорайон {microdistrict_name} не найден в списке бесплатных")
             
             return zone.bag_price if zone.bag_price else 700
+        
         return zone.base_price
+    
     finally:
         db.close()
 

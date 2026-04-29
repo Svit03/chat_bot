@@ -2,12 +2,12 @@
 -- PostgreSQL database dump
 --
 
-\restrict UwqYXSGT1cyPQH9Yc1UqFmJMF4F4ObfeytJb3qAsw08TN4URDGcui2WuOs3QzvF
+\restrict sAA7y5HTxOAKzadCbg91PESsjznaYgwttakGbNIJpm3rKeVUgM4f7t2lmm0DVdW
 
 -- Dumped from database version 18.3
 -- Dumped by pg_dump version 18.3
 
--- Started on 2026-04-27 14:18:29
+-- Started on 2026-04-29 16:27:06
 
 SET statement_timeout = 0;
 SET lock_timeout = 0;
@@ -61,7 +61,7 @@ CREATE SEQUENCE public.conversations_id_seq
 ALTER SEQUENCE public.conversations_id_seq OWNER TO postgres;
 
 --
--- TOC entry 5017 (class 0 OID 0)
+-- TOC entry 5029 (class 0 OID 0)
 -- Dependencies: 225
 -- Name: conversations_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
 --
@@ -80,7 +80,8 @@ CREATE TABLE public.delivery_zones (
     name character varying(200) NOT NULL,
     base_price integer NOT NULL,
     coefficient numeric(5,2) DEFAULT 1.0,
-    note text
+    note text,
+    bag_price integer DEFAULT 700
 );
 
 
@@ -103,12 +104,52 @@ CREATE SEQUENCE public.delivery_zones_id_seq
 ALTER SEQUENCE public.delivery_zones_id_seq OWNER TO postgres;
 
 --
--- TOC entry 5018 (class 0 OID 0)
+-- TOC entry 5030 (class 0 OID 0)
 -- Dependencies: 221
 -- Name: delivery_zones_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
 --
 
 ALTER SEQUENCE public.delivery_zones_id_seq OWNED BY public.delivery_zones.id;
+
+
+--
+-- TOC entry 230 (class 1259 OID 16481)
+-- Name: free_dolomite_microdistricts; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE public.free_dolomite_microdistricts (
+    id integer NOT NULL,
+    name character varying(200) NOT NULL,
+    slang_name character varying(200),
+    created_at timestamp without time zone DEFAULT CURRENT_TIMESTAMP
+);
+
+
+ALTER TABLE public.free_dolomite_microdistricts OWNER TO postgres;
+
+--
+-- TOC entry 229 (class 1259 OID 16480)
+-- Name: free_dolomite_microdistricts_id_seq; Type: SEQUENCE; Schema: public; Owner: postgres
+--
+
+CREATE SEQUENCE public.free_dolomite_microdistricts_id_seq
+    AS integer
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+ALTER SEQUENCE public.free_dolomite_microdistricts_id_seq OWNER TO postgres;
+
+--
+-- TOC entry 5031 (class 0 OID 0)
+-- Dependencies: 229
+-- Name: free_dolomite_microdistricts_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
+--
+
+ALTER SEQUENCE public.free_dolomite_microdistricts_id_seq OWNED BY public.free_dolomite_microdistricts.id;
 
 
 --
@@ -122,7 +163,6 @@ CREATE TABLE public.materials (
     name character varying(200) NOT NULL,
     price_per_ton numeric(10,2),
     price_per_bag numeric(10,2),
-    bag_weight integer,
     unit character varying(50) NOT NULL,
     description text,
     type character varying(20) DEFAULT 'ton'::character varying
@@ -148,7 +188,7 @@ CREATE SEQUENCE public.materials_id_seq
 ALTER SEQUENCE public.materials_id_seq OWNER TO postgres;
 
 --
--- TOC entry 5019 (class 0 OID 0)
+-- TOC entry 5032 (class 0 OID 0)
 -- Dependencies: 219
 -- Name: materials_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
 --
@@ -188,7 +228,7 @@ CREATE SEQUENCE public.microdistricts_id_seq
 ALTER SEQUENCE public.microdistricts_id_seq OWNER TO postgres;
 
 --
--- TOC entry 5020 (class 0 OID 0)
+-- TOC entry 5033 (class 0 OID 0)
 -- Dependencies: 223
 -- Name: microdistricts_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
 --
@@ -230,7 +270,7 @@ CREATE SEQUENCE public.training_examples_id_seq
 ALTER SEQUENCE public.training_examples_id_seq OWNER TO postgres;
 
 --
--- TOC entry 5021 (class 0 OID 0)
+-- TOC entry 5034 (class 0 OID 0)
 -- Dependencies: 227
 -- Name: training_examples_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
 --
@@ -239,7 +279,7 @@ ALTER SEQUENCE public.training_examples_id_seq OWNED BY public.training_examples
 
 
 --
--- TOC entry 4834 (class 2604 OID 16439)
+-- TOC entry 4840 (class 2604 OID 16439)
 -- Name: conversations id; Type: DEFAULT; Schema: public; Owner: postgres
 --
 
@@ -247,7 +287,7 @@ ALTER TABLE ONLY public.conversations ALTER COLUMN id SET DEFAULT nextval('publi
 
 
 --
--- TOC entry 4831 (class 2604 OID 16409)
+-- TOC entry 4836 (class 2604 OID 16409)
 -- Name: delivery_zones id; Type: DEFAULT; Schema: public; Owner: postgres
 --
 
@@ -255,7 +295,15 @@ ALTER TABLE ONLY public.delivery_zones ALTER COLUMN id SET DEFAULT nextval('publ
 
 
 --
--- TOC entry 4829 (class 2604 OID 16393)
+-- TOC entry 4846 (class 2604 OID 16484)
+-- Name: free_dolomite_microdistricts id; Type: DEFAULT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.free_dolomite_microdistricts ALTER COLUMN id SET DEFAULT nextval('public.free_dolomite_microdistricts_id_seq'::regclass);
+
+
+--
+-- TOC entry 4834 (class 2604 OID 16393)
 -- Name: materials id; Type: DEFAULT; Schema: public; Owner: postgres
 --
 
@@ -263,7 +311,7 @@ ALTER TABLE ONLY public.materials ALTER COLUMN id SET DEFAULT nextval('public.ma
 
 
 --
--- TOC entry 4833 (class 2604 OID 16425)
+-- TOC entry 4839 (class 2604 OID 16425)
 -- Name: microdistricts id; Type: DEFAULT; Schema: public; Owner: postgres
 --
 
@@ -271,7 +319,7 @@ ALTER TABLE ONLY public.microdistricts ALTER COLUMN id SET DEFAULT nextval('publ
 
 
 --
--- TOC entry 4836 (class 2604 OID 16450)
+-- TOC entry 4842 (class 2604 OID 16450)
 -- Name: training_examples id; Type: DEFAULT; Schema: public; Owner: postgres
 --
 
@@ -279,7 +327,7 @@ ALTER TABLE ONLY public.training_examples ALTER COLUMN id SET DEFAULT nextval('p
 
 
 --
--- TOC entry 5009 (class 0 OID 16436)
+-- TOC entry 5019 (class 0 OID 16436)
 -- Dependencies: 226
 -- Data for Name: conversations; Type: TABLE DATA; Schema: public; Owner: postgres
 --
@@ -289,46 +337,60 @@ COPY public.conversations (id, user_id, user_message, bot_response, detected_int
 
 
 --
--- TOC entry 5005 (class 0 OID 16406)
+-- TOC entry 5015 (class 0 OID 16406)
 -- Dependencies: 222
 -- Data for Name: delivery_zones; Type: TABLE DATA; Schema: public; Owner: postgres
 --
 
-COPY public.delivery_zones (id, key_name, name, base_price, coefficient, note) FROM stdin;
-6	советский	Советский район	4000	1.15	\N
-7	железнодорожный	Железнодорожный район	5000	1.43	\N
-5	октябрьский	Октябрьский район	3500	1.00	\N
+COPY public.delivery_zones (id, key_name, name, base_price, coefficient, note, bag_price) FROM stdin;
+6	советский	Советский район	4000	1.15	\N	700
+7	железнодорожный	Железнодорожный район	5000	1.43	\N	700
+5	октябрьский	Октябрьский район	3500	1.00	\N	700
+11	отдаленные_микрорайоны	Отдаленные микрорайоны	5000	1.00	\N	700
+12	район	район	10000	1.00	район	1000
 \.
 
 
 --
--- TOC entry 5003 (class 0 OID 16390)
+-- TOC entry 5023 (class 0 OID 16481)
+-- Dependencies: 230
+-- Data for Name: free_dolomite_microdistricts; Type: TABLE DATA; Schema: public; Owner: postgres
+--
+
+COPY public.free_dolomite_microdistricts (id, name, slang_name, created_at) FROM stdin;
+2	горького	горький	2026-04-28 18:17:52.260247
+6	саяны	саяны	2026-04-28 11:28:45.469567
+7	комушка	комушка	2026-04-28 11:36:41.955666
+10	радуга	радужный	2026-04-29 04:34:04.415783
+\.
+
+
+--
+-- TOC entry 5013 (class 0 OID 16390)
 -- Dependencies: 220
 -- Data for Name: materials; Type: TABLE DATA; Schema: public; Owner: postgres
 --
 
-COPY public.materials (id, key_name, name, price_per_ton, price_per_bag, bag_weight, unit, description, type) FROM stdin;
-10	щебень	Щебень	1700.00	\N	\N	тонна	Для бетона, фундамента, дорожек	ton
-11	щебень_5_20	Щебень фракции 5-20мм	1700.00	\N	\N	тонна	Мелкий щебень для бетона и дорожек	ton
-12	щебень_20_40	Щебень фракции 20-40мм	1650.00	\N	\N	тонна	Средний щебень для фундамента	ton
-13	песок	Песок строительный	800.00	\N	\N	тонна	Для бетона и строительных работ	ton
-14	гравий	Гравий	1600.00	\N	\N	тонна	Для дренажа и строительства	ton
-15	крошка	Крошка гранитная	1800.00	\N	\N	тонна	Для огорода, бетона, стяжки	ton
-16	отсев	Отсев речной	900.00	\N	\N	тонна	Для бетона, стяжки, штукатурки	ton
-17	доломит	Доломит (белый камень)	\N	350.00	45	мешок	Для сада, дорожек, декора	bag
-18	мраморный_щебень	Мраморный щебень в мешках	\N	350.00	45	мешок	Для сада, огорода, дорожек и декора	bag
+COPY public.materials (id, key_name, name, price_per_ton, price_per_bag, unit, description, type) FROM stdin;
+10	щебень	Щебень	1700.00	\N	тонна	Для бетона, фундамента, дорожек	ton
+11	щебень_5_20	Щебень фракции 5-20мм	1700.00	\N	тонна	Мелкий щебень для бетона и дорожек	ton
+12	щебень_20_40	Щебень фракции 20-40мм	1650.00	\N	тонна	Средний щебень для фундамента	ton
+13	песок	Песок строительный	800.00	\N	тонна	Для бетона и строительных работ	ton
+14	гравий	Гравий	1600.00	\N	тонна	Для дренажа и строительства	ton
+15	крошка	Крошка гранитная	1800.00	\N	тонна	Для огорода, бетона, стяжки	ton
+16	отсев	Отсев речной	900.00	\N	тонна	Для бетона, стяжки, штукатурки	ton
+17	доломит	Доломит (белый камень)	\N	330.00	мешок	Для сада, дорожек, декора	bag
 \.
 
 
 --
--- TOC entry 5007 (class 0 OID 16422)
+-- TOC entry 5017 (class 0 OID 16422)
 -- Dependencies: 224
 -- Data for Name: microdistricts; Type: TABLE DATA; Schema: public; Owner: postgres
 --
 
 COPY public.microdistricts (id, zone_id, name, slang_name) FROM stdin;
 22	7	Аршан	Аршан
-23	7	Верхняя Берёзовка	Берёзовка
 24	7	Восточный	Восточный
 25	7	Загорск	Авиазавод
 26	7	Загорск	Машзавод
@@ -345,30 +407,17 @@ COPY public.microdistricts (id, zone_id, name, slang_name) FROM stdin;
 37	7	Шишковка	Шишковка
 38	7	Шишковка	3-й цинхай
 39	5	Комушка	Комушка
-40	5	Новая Комушка	Новая Комушка
 41	5	Забайкальский	Забайкальский
-42	5	Горького	пос. Горького
-43	5	Звездный	Звездный
-44	5	Зерногородок	Зерногородок
-45	5	Импульс	Импульс
 46	5	Медведчиково	Медведчиково
 47	5	Мелькомбинат	Мелькомбинат
 48	5	Мясокомбинат	Мясокомбинат
-49	5	Николаевский	Николаевский
 50	5	Октябрьский	Октябрь
 51	5	Октябрьский	Зауда
-52	5	Радуга	Радуга
 53	5	Светлый	Светлый
 54	5	Силикатный	Силикатный
 55	5	Сокольники	Сокольники
-56	5	Сосновый Бор	Сосновка
-57	5	Степной	Степной
 58	5	Таежный	Таежный
-59	5	Тальцы	Тальцы
-60	5	Тепловик	Тепловик
-61	5	Тулунжа	Тулунжа
 62	5	Энергетик	Энергетик
-63	5	Южный	Южный
 64	5	18-19 кварталы	5-й цинхай
 65	5	20-й квартал	Форт
 66	5	20-й квартал	NST
@@ -378,19 +427,15 @@ COPY public.microdistricts (id, zone_id, name, slang_name) FROM stdin;
 70	5	47-й квартал	Манхэттен
 71	5	47-й квартал	Чанкайши
 72	5	102-й квартал	Загробная
-73	5	Нахаловка	Нахаловка
 74	6	Вагжанова	Вагжанова
 75	6	Исток	Исток
 76	6	Сокол	Сокол
-77	6	Солдатский	Солдатский
-78	6	Сосновый Бор	Сосновка
 79	6	Степной	Степной
 80	6	Аэропорт	Аэропорт
 81	6	Заречный	Заречка
 82	6	Тапхар	Тапхар
 83	6	Левый берег	Левый берег
 84	6	Кумыска	Кумыска
-85	6	Стеклозавод	Стеклозавод
 86	6	Центр	Центр
 87	6	Центр	Арбат
 88	6	Площадь Советов	Башка
@@ -424,14 +469,31 @@ COPY public.microdistricts (id, zone_id, name, slang_name) FROM stdin;
 116	6	Почтовка	Почтовка
 117	6	Гортоп	Гортоп
 118	6	Дружба	Дружба
-119	6	Казахстан	Казахстан
 120	6	Вертолетка	Вертолетка
 121	6	Старая барахолка	Старая барахолка
+127	7	Левый берег	
+128	7	Солдатский	Солдатский
+135	11	Сосновый бор	Сосновка
+136	11	Тальцы	Тальцы
+137	11	Южный	Южный
+138	11	Звездный	Звездный
+139	5	Солнечный	Солнечный
+140	5	Саяны	Саяны
+141	11	Тальцы	Тальцы
+142	11	Дабаты	Дабата
+143	11	Саянтуй	Саянтуй
+144	5	Новая Комушка	Новая Комушка
+145	5	Комушка	Комушка
+146	6	Стеклозавод	Стеколка
+147	7	Верхняя Берёзовка	Берёзовка, березовка
+148	5	радуга	радужный
+149	5	Горького	Горький
+152	12	район	район
 \.
 
 
 --
--- TOC entry 5011 (class 0 OID 16447)
+-- TOC entry 5021 (class 0 OID 16447)
 -- Dependencies: 228
 -- Data for Name: training_examples; Type: TABLE DATA; Schema: public; Owner: postgres
 --
@@ -441,7 +503,7 @@ COPY public.training_examples (id, text, intent, source, approved, created_at) F
 
 
 --
--- TOC entry 5022 (class 0 OID 0)
+-- TOC entry 5035 (class 0 OID 0)
 -- Dependencies: 225
 -- Name: conversations_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
@@ -450,34 +512,43 @@ SELECT pg_catalog.setval('public.conversations_id_seq', 1, false);
 
 
 --
--- TOC entry 5023 (class 0 OID 0)
+-- TOC entry 5036 (class 0 OID 0)
 -- Dependencies: 221
 -- Name: delivery_zones_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
 
-SELECT pg_catalog.setval('public.delivery_zones_id_seq', 8, true);
+SELECT pg_catalog.setval('public.delivery_zones_id_seq', 12, true);
 
 
 --
--- TOC entry 5024 (class 0 OID 0)
+-- TOC entry 5037 (class 0 OID 0)
+-- Dependencies: 229
+-- Name: free_dolomite_microdistricts_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
+--
+
+SELECT pg_catalog.setval('public.free_dolomite_microdistricts_id_seq', 12, true);
+
+
+--
+-- TOC entry 5038 (class 0 OID 0)
 -- Dependencies: 219
 -- Name: materials_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
 
-SELECT pg_catalog.setval('public.materials_id_seq', 25, true);
+SELECT pg_catalog.setval('public.materials_id_seq', 32, true);
 
 
 --
--- TOC entry 5025 (class 0 OID 0)
+-- TOC entry 5039 (class 0 OID 0)
 -- Dependencies: 223
 -- Name: microdistricts_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
 
-SELECT pg_catalog.setval('public.microdistricts_id_seq', 126, true);
+SELECT pg_catalog.setval('public.microdistricts_id_seq', 152, true);
 
 
 --
--- TOC entry 5026 (class 0 OID 0)
+-- TOC entry 5040 (class 0 OID 0)
 -- Dependencies: 227
 -- Name: training_examples_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
@@ -486,7 +557,7 @@ SELECT pg_catalog.setval('public.training_examples_id_seq', 1, false);
 
 
 --
--- TOC entry 4851 (class 2606 OID 16445)
+-- TOC entry 4859 (class 2606 OID 16445)
 -- Name: conversations conversations_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -495,7 +566,7 @@ ALTER TABLE ONLY public.conversations
 
 
 --
--- TOC entry 4845 (class 2606 OID 16420)
+-- TOC entry 4853 (class 2606 OID 16420)
 -- Name: delivery_zones delivery_zones_key_name_key; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -504,7 +575,7 @@ ALTER TABLE ONLY public.delivery_zones
 
 
 --
--- TOC entry 4847 (class 2606 OID 16418)
+-- TOC entry 4855 (class 2606 OID 16418)
 -- Name: delivery_zones delivery_zones_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -513,7 +584,16 @@ ALTER TABLE ONLY public.delivery_zones
 
 
 --
--- TOC entry 4841 (class 2606 OID 16404)
+-- TOC entry 4863 (class 2606 OID 16489)
+-- Name: free_dolomite_microdistricts free_dolomite_microdistricts_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.free_dolomite_microdistricts
+    ADD CONSTRAINT free_dolomite_microdistricts_pkey PRIMARY KEY (id);
+
+
+--
+-- TOC entry 4849 (class 2606 OID 16404)
 -- Name: materials materials_key_name_key; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -522,7 +602,7 @@ ALTER TABLE ONLY public.materials
 
 
 --
--- TOC entry 4843 (class 2606 OID 16402)
+-- TOC entry 4851 (class 2606 OID 16402)
 -- Name: materials materials_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -531,7 +611,7 @@ ALTER TABLE ONLY public.materials
 
 
 --
--- TOC entry 4849 (class 2606 OID 16429)
+-- TOC entry 4857 (class 2606 OID 16429)
 -- Name: microdistricts microdistricts_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -540,7 +620,7 @@ ALTER TABLE ONLY public.microdistricts
 
 
 --
--- TOC entry 4853 (class 2606 OID 16460)
+-- TOC entry 4861 (class 2606 OID 16460)
 -- Name: training_examples training_examples_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -549,7 +629,7 @@ ALTER TABLE ONLY public.training_examples
 
 
 --
--- TOC entry 4854 (class 2606 OID 16473)
+-- TOC entry 4864 (class 2606 OID 16473)
 -- Name: microdistricts microdistricts_zone_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -557,11 +637,11 @@ ALTER TABLE ONLY public.microdistricts
     ADD CONSTRAINT microdistricts_zone_id_fkey FOREIGN KEY (zone_id) REFERENCES public.delivery_zones(id) ON DELETE CASCADE;
 
 
--- Completed on 2026-04-27 14:18:30
+-- Completed on 2026-04-29 16:27:06
 
 --
 -- PostgreSQL database dump complete
 --
 
-\unrestrict UwqYXSGT1cyPQH9Yc1UqFmJMF4F4ObfeytJb3qAsw08TN4URDGcui2WuOs3QzvF
+\unrestrict sAA7y5HTxOAKzadCbg91PESsjznaYgwttakGbNIJpm3rKeVUgM4f7t2lmm0DVdW
 

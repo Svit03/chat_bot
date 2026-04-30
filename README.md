@@ -168,8 +168,8 @@ python backend/app.py
 
 8. Запустить фронтенд (отдельный терминал)
 
-cd frontend
-python -m http.server 8001
+start frontend/index.html
+start frontend/admin.html
 
 9. Открыть в браузере
 

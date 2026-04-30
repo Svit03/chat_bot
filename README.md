@@ -132,6 +132,7 @@
 1. Клонировать репозиторий
 
 git clone https://github.com/Svit03/chat_bot.git
+
 cd chat_bot
 
 2. Создать виртуальное окружение

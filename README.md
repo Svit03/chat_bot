@@ -170,6 +170,7 @@ python backend/app.py
 8. Запустить фронтенд (отдельный терминал)
 
 start frontend/index.html
+
 start frontend/admin.html
 
 9. Открыть в браузере
